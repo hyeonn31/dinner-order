@@ -238,10 +238,19 @@ export default function SummaryPage() {
                         {order.restaurantName}
                       </td>
                       <td className="px-4 py-3" style={{ color: "oklch(0.35 0.02 30)" }}>
-                        {order.mainMenuName || "-"}
+                        {/* 햄버거 + 사이드 조합 표시 */}
+                        {order.sideMenuName && (order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크'))
+                          ? `${order.mainMenuName} + ${order.sideMenuName}`
+                          : order.mainMenuName || "-"}
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
-                        {[order.sideMenuName, order.drinkOption, order.extraOption].filter(Boolean).join(" / ") || "-"}
+                        {(() => {
+                          const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
+                          const extras = isHamburger
+                            ? [order.drinkOption, order.extraOption].filter(Boolean)
+                            : [order.drinkOption, order.extraOption].filter(Boolean);
+                          return extras.join(" / ") || "-";
+                        })()}
                       </td>
                     </tr>
                   ))}
