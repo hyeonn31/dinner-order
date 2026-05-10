@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle } from "lucide-react";
+import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,63 +23,33 @@ export default function OrderPage() {
   const [extraOption, setExtraOption] = useState("");
   const [note, setNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
 
   const { data: menus } = trpc.restaurant.menus.useQuery(
     { restaurantId: selectedRestaurantId! },
     { enabled: !!selectedRestaurantId }
   );
 
-  const { data: myOrder, refetch: refetchMyOrder } = trpc.order.myOrder.useQuery(
-    { employeeId: selectedEmployeeId! },
-    { enabled: !!selectedEmployeeId }
-  );
-
-  useEffect(() => {
-    if (myOrder) {
-      setSelectedRestaurantId(myOrder.restaurantId);
-      setMainMenu(myOrder.mainMenuName || "");
-      setSideMenu(myOrder.sideMenuName || "");
-      setDrinkOption(myOrder.drinkOption || "");
-      setExtraOption(myOrder.extraOption || "");
-      setNote(myOrder.note || "");
-      setSubmitted(true);
-    } else if (selectedEmployeeId) {
-      setSelectedRestaurantId(null);
-      setMainMenu("");
-      setSideMenu("");
-      setDrinkOption("");
-      setExtraOption("");
-      setNote("");
-      setSubmitted(false);
-    }
-  }, [myOrder, selectedEmployeeId]);
-
   const submitMutation = trpc.order.submit.useMutation({
     onSuccess: () => {
-      utils.order.todayAll.invalidate();
-      utils.order.summary.invalidate();
-      refetchMyOrder();
+      toast.success("신청이 완료되었습니다");
       setSubmitted(true);
-      toast.success("신청이 완료되었습니다!");
+      setTimeout(() => {
+        setSelectedEmployeeId(null);
+        setSelectedRestaurantId(null);
+        setMainMenu("");
+        setSideMenu("");
+        setDrinkOption("");
+        setExtraOption("");
+        setNote("");
+        setSubmitted(false);
+        setEmployeeSearchQuery("");
+        utils.order.todayAll.invalidate();
+      }, 2000);
     },
-    onError: () => toast.error("신청 중 오류가 발생했습니다."),
-  });
-
-  const cancelMutation = trpc.order.cancel.useMutation({
-    onSuccess: () => {
-      utils.order.todayAll.invalidate();
-      utils.order.summary.invalidate();
-      refetchMyOrder();
-      setSubmitted(false);
-      setSelectedRestaurantId(null);
-      setMainMenu("");
-      setSideMenu("");
-      setDrinkOption("");
-      setExtraOption("");
-      setNote("");
-      toast.success("신청이 취소되었습니다.");
+    onError: (error: any) => {
+      toast.error(error.message || "신청에 실패했습니다");
     },
-    onError: () => toast.error("취소 중 오류가 발생했습니다."),
   });
 
   const handleSubmit = () => {
@@ -98,10 +69,18 @@ export default function OrderPage() {
     });
   };
 
-  const mainMenus = menus?.filter(m => m.itemType === "main") ?? [];
-  const sideMenus = menus?.filter(m => m.itemType === "side") ?? [];
-  const drinkMenus = menus?.filter(m => m.itemType === "drink") ?? [];
-  const optionMenus = menus?.filter(m => m.itemType === "option") ?? [];
+  const mainMenus = menus?.filter((m: any) => m.itemType === "main") ?? [];
+  const sideMenus = menus?.filter((m: any) => m.itemType === "side") ?? [];
+  const drinkMenus = menus?.filter((m: any) => m.itemType === "drink") ?? [];
+  const optionMenus = menus?.filter((m: any) => m.itemType === "option" || m.itemType === "extra") ?? [];
+
+  const filteredEmployees = useMemo(() => {
+    if (!employees) return [];
+    if (!employeeSearchQuery.trim()) return employees;
+    return employees.filter(emp =>
+      emp.nickname.toLowerCase().includes(employeeSearchQuery.toLowerCase())
+    );
+  }, [employees, employeeSearchQuery]);
 
   const hasNoSetup = !todayRestaurants || todayRestaurants.length === 0;
 
@@ -109,252 +88,201 @@ export default function OrderPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.18 0.02 30)", fontFamily: "'Playfair Display', serif" }}>
+        <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)" }}>
           저녁식사 신청
         </h1>
-        <p className="text-sm" style={{ color: "oklch(0.52 0.02 30)" }}>
+        <p className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
           이름을 선택하고 원하는 메뉴를 신청하세요
         </p>
       </div>
 
-      {/* No Setup Warning */}
+      {/* 오류 메시지 */}
       {hasNoSetup && (
-        <div className="rounded-xl p-5 mb-6 flex items-start gap-3"
-          style={{ background: "oklch(0.97 0.03 60)", border: "1px solid oklch(0.85 0.05 60)" }}>
-          <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "oklch(0.65 0.12 60)" }} />
+        <div className="mb-6 p-4 rounded-lg flex gap-3" style={{ background: "oklch(0.97 0.01 250)", border: "1px solid oklch(0.90 0.01 250)" }}>
+          <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: "oklch(0.55 0.18 250)" }} />
           <div>
-            <div className="font-medium text-sm mb-1" style={{ color: "oklch(0.42 0.08 60)" }}>
-              오늘의 식당이 아직 설정되지 않았습니다
-            </div>
-            <div className="text-sm" style={{ color: "oklch(0.55 0.05 60)" }}>
-              관리자 페이지에서 오늘의 식당을 먼저 설정해 주세요.
-            </div>
+            <p className="font-medium mb-1" style={{ color: "oklch(0.20 0.03 250)" }}>오늘의 식당이 아직 설정되지 않았습니다</p>
+            <p className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>관리자 페이지에서 오늘의 식당을 먼저 설정해 주세요.</p>
           </div>
         </div>
       )}
 
-      {/* Main Form Card */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)", boxShadow: "0 4px 24px oklch(0.18 0.02 30 / 0.08)" }}>
-
-        {/* Step 1: 이름 선택 */}
-        <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 60)" }}>
-          <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 30)" }}>
-            1. 이름 선택
-          </Label>
-          <Select
-            value={selectedEmployeeId?.toString() ?? ""}
-            onValueChange={v => setSelectedEmployeeId(Number(v))}
-          >
-            <SelectTrigger className="w-full h-11">
-              <SelectValue placeholder="이름을 선택하세요..." />
-            </SelectTrigger>
-            <SelectContent className="max-h-64">
-              {employees?.map(emp => (
-                <SelectItem key={emp.id} value={emp.id.toString()}>
-                  {emp.nickname}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Step 2: 식당 선택 */}
-        {selectedEmployeeId && (
-          <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 60)" }}>
-            <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 30)" }}>
-              2. 식당 선택
-            </Label>
-            {hasNoSetup ? (
-              <div className="text-sm py-2" style={{ color: "oklch(0.65 0.02 60)" }}>
-                오늘의 식당이 설정되지 않았습니다.
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {todayRestaurants?.map(r => (
-                  <button
-                    key={r.restaurantId}
-                    onClick={() => {
-                      setSelectedRestaurantId(r.restaurantId);
-                      setMainMenu("");
-                      setSideMenu("");
-                      setDrinkOption("");
-                      setExtraOption("");
-                    }}
-                    className="rounded-xl px-4 py-3 text-sm font-medium text-left transition-all duration-150"
-                    style={{
-                      background: selectedRestaurantId === r.restaurantId ? "oklch(0.22 0.04 30)" : "oklch(0.97 0.005 60)",
-                      border: selectedRestaurantId === r.restaurantId
-                        ? "2px solid oklch(0.72 0.12 75 / 0.8)"
-                        : "1px solid oklch(0.88 0.01 60)",
-                      color: selectedRestaurantId === r.restaurantId ? "oklch(0.88 0.07 75)" : "oklch(0.35 0.02 30)",
-                    }}
-                  >
-                    <div className="text-xs mb-0.5" style={{ opacity: 0.7 }}>{r.categoryName}</div>
-                    {r.restaurantName}
-                  </button>
-                ))}
-              </div>
-            )}
+      {/* 완료 메시지 */}
+      {submitted && (
+        <div className="mb-6 p-4 rounded-lg flex gap-3" style={{ background: "oklch(0.92 0.05 140)", border: "1px solid oklch(0.70 0.15 140)" }}>
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: "oklch(0.55 0.18 140)" }} />
+          <div>
+            <p className="font-medium" style={{ color: "oklch(0.20 0.03 250)" }}>신청이 완료되었습니다!</p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Step 3: 메뉴 선택 */}
-        {selectedRestaurantId && (
-          <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 60)" }}>
-            <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 30)" }}>
-              3. 메뉴 선택
-            </Label>
-            <div className="space-y-3">
-              {/* 메인 메뉴 */}
-              <div>
-                <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 30)" }}>메인 메뉴 *</div>
-                <Select value={mainMenu} onValueChange={setMainMenu}>
-                  <SelectTrigger className="w-full h-11">
-                    <SelectValue placeholder="메인 메뉴를 선택하세요..." />
+      {!hasNoSetup && (
+        <>
+          {/* Main Form Card */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.90 0.01 250)", boxShadow: "0 4px 24px oklch(0.20 0.03 250 / 0.08)" }}>
+
+            {/* Step 1: 이름 선택 */}
+            <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)" }}>
+              <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 250)" }}>
+                1. 이름 선택
+              </Label>
+              <div className="relative mb-2">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="이름 검색..."
+                  value={employeeSearchQuery}
+                  onChange={(e) => setEmployeeSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={selectedEmployeeId?.toString() || ""} onValueChange={(v) => setSelectedEmployeeId(parseInt(v))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="이름을 선택하세요..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredEmployees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id.toString()}>
+                      {emp.nickname}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Step 2: 식당 선택 */}
+            {selectedEmployeeId && (
+              <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)" }}>
+                <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 250)" }}>
+                  2. 식당 선택
+                </Label>
+                <Select value={selectedRestaurantId?.toString() || ""} onValueChange={(v) => setSelectedRestaurantId(parseInt(v))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="식당을 선택하세요..." />
                   </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {mainMenus.map(m => (
-                      <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                  <SelectContent>
+                    {todayRestaurants?.map((r) => (
+                      <SelectItem key={r.id} value={r.id.toString()}>
+                        {r.restaurantName}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+            )}
 
-              {/* 사이드 메뉴 */}
-              {sideMenus.length > 0 && (
-                <div>
-                  <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 30)" }}>사이드 메뉴</div>
-                  <Select value={sideMenu} onValueChange={setSideMenu}>
-                    <SelectTrigger className="w-full h-11">
-                      <SelectValue placeholder="사이드 메뉴 (선택사항)" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-64">
-                      <SelectItem value="none">선택 안함</SelectItem>
-                      {sideMenus.map(m => (
-                        <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* 추가 옵션 */}
-              {optionMenus.length > 0 && (
-                <div>
-                  <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 30)" }}>추가 옵션</div>
-                  <Select value={extraOption} onValueChange={setExtraOption}>
-                    <SelectTrigger className="w-full h-11">
-                      <SelectValue placeholder="추가 옵션 (선택사항)" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-64">
-                      <SelectItem value="none">선택 안함</SelectItem>
-                      {optionMenus.map(m => (
-                        <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* 음료 */}
-              <div>
-                <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 30)" }}>음료</div>
-                <Select value={drinkOption} onValueChange={setDrinkOption}>
-                  <SelectTrigger className="w-full h-11">
-                    <SelectValue placeholder="음료 선택 (선택사항)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {drinkMenus.length > 0 ? (
-                      <>
-                        <SelectItem value="none">선택 안함</SelectItem>
-                        {drinkMenus.map(m => (
+            {/* Step 3: 메뉴 선택 */}
+            {selectedEmployeeId && selectedRestaurantId && (
+              <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)" }}>
+                <Label className="text-sm font-semibold mb-4 block" style={{ color: "oklch(0.35 0.03 250)" }}>
+                  3. 메뉴 선택
+                </Label>
+                <div className="space-y-4">
+                  {/* 메인메뉴 */}
+                  <div>
+                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>메인메뉴 *</div>
+                    <Select value={mainMenu} onValueChange={setMainMenu}>
+                      <SelectTrigger className="w-full h-11">
+                        <SelectValue placeholder="메인메뉴를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {mainMenus.map((m: any) => (
                           <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
-                      </>
-                    ) : (
-                      DRINK_OPTIONS.map(d => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-        {/* Step 4: 요청사항 */}
-        {selectedRestaurantId && (
-          <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 60)" }}>
-            <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 30)" }}>
-              4. 요청사항 (선택)
-            </Label>
-            <Textarea
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              placeholder="특별 요청사항을 입력하세요..."
-              className="resize-none h-20 text-sm"
-            />
-          </div>
-        )}
+                  {/* 사이드 */}
+                  {sideMenus.length > 0 && (
+                    <div>
+                      <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>사이드</div>
+                      <Select value={sideMenu} onValueChange={setSideMenu}>
+                        <SelectTrigger className="w-full h-11">
+                          <SelectValue placeholder="사이드 (선택사항)" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          <SelectItem value="none">선택 안함</SelectItem>
+                          {sideMenus.map((m: any) => (
+                            <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-        {/* Submit */}
-        {selectedEmployeeId && (
-          <div className="p-6">
-            {submitted && myOrder ? (
-              <div className="space-y-4">
-                {/* 신청 완료 상태 */}
-                <div className="rounded-xl p-4 flex items-start gap-3"
-                  style={{ background: "oklch(0.96 0.04 145 / 0.3)", border: "1px solid oklch(0.65 0.15 145 / 0.3)" }}>
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "oklch(0.55 0.15 145)" }} />
+                  {/* 추가 옵션 */}
+                  {optionMenus.length > 0 && (
+                    <div>
+                      <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>추가 옵션</div>
+                      <Select value={extraOption} onValueChange={setExtraOption}>
+                        <SelectTrigger className="w-full h-11">
+                          <SelectValue placeholder="추가 옵션 (선택사항)" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          <SelectItem value="none">선택 안함</SelectItem>
+                          {optionMenus.map((m: any) => (
+                            <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* 음료 */}
                   <div>
-                    <div className="font-semibold text-sm mb-1" style={{ color: "oklch(0.38 0.12 145)" }}>
-                      신청 완료!
-                    </div>
-                    <div className="text-sm space-y-0.5" style={{ color: "oklch(0.45 0.08 145)" }}>
-                      <div><strong>식당:</strong> {todayRestaurants?.find(r => r.restaurantId === myOrder.restaurantId)?.restaurantName}</div>
-                      <div><strong>메뉴:</strong> {myOrder.mainMenuName}</div>
-                      {myOrder.sideMenuName && <div><strong>사이드:</strong> {myOrder.sideMenuName}</div>}
-                      {myOrder.drinkOption && <div><strong>음료:</strong> {myOrder.drinkOption}</div>}
-                      {myOrder.extraOption && <div><strong>추가옵션:</strong> {myOrder.extraOption}</div>}
-                      {myOrder.note && <div><strong>요청사항:</strong> {myOrder.note}</div>}
-                    </div>
+                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>음료</div>
+                    <Select value={drinkOption} onValueChange={setDrinkOption}>
+                      <SelectTrigger className="w-full h-11">
+                        <SelectValue placeholder="음료 (선택사항)" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {DRINK_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* 특수 요청 */}
+                  <div>
+                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>특수 요청 (선택사항)</div>
+                    <Textarea
+                      placeholder="예: 맵게 해주세요, 소스 별도 등..."
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="h-20 resize-none"
+                    />
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 gap-2"
-                    onClick={() => setSubmitted(false)}
-                  >
-                    수정하기
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 gap-2 text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={() => cancelMutation.mutate({ employeeId: selectedEmployeeId! })}
-                    disabled={cancelMutation.isPending}
-                  >
-                    <X className="w-4 h-4" />
-                    신청 취소
-                  </Button>
-                </div>
               </div>
-            ) : (
-              <Button
-                className="w-full h-12 gap-2 text-base font-semibold"
-                onClick={handleSubmit}
-                disabled={submitMutation.isPending || !mainMenu}
-                style={{ background: "oklch(0.22 0.04 30)", color: "oklch(0.88 0.07 75)" }}
-              >
-                <Send className="w-5 h-5" />
-                {submitMutation.isPending ? "신청 중..." : "저녁식사 신청하기"}
-              </Button>
+            )}
+
+            {/* Submit Button */}
+            {selectedEmployeeId && selectedRestaurantId && mainMenu && (
+              <div className="p-6">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={submitMutation.isPending}
+                  className="w-full h-12 font-semibold text-base bg-accent hover:bg-accent/90"
+                >
+                  {submitMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      신청 중...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      신청하기
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

@@ -77,10 +77,10 @@ export default function AdminPage() {
       <div className="mb-8">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.18 0.02 30)", fontFamily: "'Playfair Display', serif" }}>
+            <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
               관리자 설정
             </h1>
-            <p className="text-sm" style={{ color: "oklch(0.52 0.02 30)" }}>
+            <p className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
               {today} &mdash; 오늘의 식당을 선택하세요
             </p>
           </div>
@@ -125,7 +125,7 @@ export default function AdminPage() {
               onClick={handleSave}
               disabled={setRestaurantsMutation.isPending}
               className="gap-2 font-medium"
-              style={{ background: "oklch(0.22 0.04 30)", color: "oklch(0.88 0.07 75)" }}
+              style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}
             >
               <Check className="w-4 h-4" />
               {setRestaurantsMutation.isPending ? "저장 중..." : `저장 (${selected.size}개 선택)`}
@@ -141,7 +141,7 @@ export default function AdminPage() {
           <span className="text-sm font-medium mr-2" style={{ color: "oklch(0.42 0.08 65)" }}>선택된 식당:</span>
           {allRestaurants?.filter(r => selected.has(r.id)).map(r => (
             <span key={r.id} className="px-3 py-1 rounded-full text-xs font-medium"
-              style={{ background: "oklch(0.22 0.04 30)", color: "oklch(0.88 0.07 75)" }}>
+              style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}>
               {r.name}
             </span>
           ))}
@@ -150,7 +150,7 @@ export default function AdminPage() {
 
       {/* Restaurant Grid by Category */}
       {isLoading ? (
-        <div className="text-center py-12" style={{ color: "oklch(0.52 0.02 30)" }}>불러오는 중...</div>
+        <div className="text-center py-12" style={{ color: "oklch(0.50 0.03 250)" }}>불러오는 중...</div>
       ) : (
         <div className="space-y-8">
           {Object.entries(grouped).map(([category, restaurants]) => {
@@ -177,7 +177,7 @@ export default function AdminPage() {
                         onClick={() => toggleRestaurant(restaurant.id)}
                         className="relative rounded-xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5"
                         style={{
-                          background: isSelected ? "oklch(0.22 0.04 30)" : "white",
+                          background: isSelected ? "oklch(0.35 0.08 250)" : "white",
                           border: isSelected
                             ? "2px solid oklch(0.72 0.12 75 / 0.8)"
                             : "1px solid oklch(0.88 0.01 60)",
@@ -188,14 +188,14 @@ export default function AdminPage() {
                       >
                         {isSelected && (
                           <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ background: "oklch(0.72 0.12 75)" }}>
+                            style={{ background: "oklch(0.55 0.18 250)" }}>
                             <Check className="w-3 h-3 text-white" />
                           </div>
                         )}
                         <Store className="w-5 h-5 mb-2"
-                          style={{ color: isSelected ? "oklch(0.72 0.12 75)" : "oklch(0.65 0.02 60)" }} />
+                          style={{ color: isSelected ? "oklch(0.55 0.18 250)" : "oklch(0.65 0.02 60)" }} />
                         <div className="text-sm font-medium leading-tight"
-                          style={{ color: isSelected ? "white" : "oklch(0.18 0.02 30)" }}>
+                          style={{ color: isSelected ? "white" : "oklch(0.20 0.03 250)" }}>
                           {restaurant.name}
                         </div>
                       </button>
@@ -211,7 +211,7 @@ export default function AdminPage() {
       {/* Current Status */}
       {todayOrders && todayOrders.length > 0 && (
         <div className="mt-8 rounded-xl p-5" style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)" }}>
-          <h3 className="font-semibold mb-3" style={{ color: "oklch(0.18 0.02 30)" }}>
+          <h3 className="font-semibold mb-3" style={{ color: "oklch(0.20 0.03 250)" }}>
             현재 신청 현황 ({todayOrders.length}명)
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">

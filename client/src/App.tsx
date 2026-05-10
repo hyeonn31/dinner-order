@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import AdminPage from "./pages/AdminPage";
 import OrderPage from "./pages/OrderPage";
 import SummaryPage from "./pages/SummaryPage";
+import EmployeeManagePage from "./pages/EmployeeManagePage";
+import RestaurantManagePage from "./pages/RestaurantManagePage";
 import AppLayout from "./components/AppLayout";
 
 function Router() {
@@ -18,6 +20,8 @@ function Router() {
         <Route path="/admin" component={AdminPage} />
         <Route path="/order" component={OrderPage} />
         <Route path="/summary" component={SummaryPage} />
+        <Route path="/employee-manage" component={EmployeeManagePage} />
+        <Route path="/restaurant-manage" component={RestaurantManagePage} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

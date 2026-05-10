@@ -72,10 +72,10 @@ export default function SummaryPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.18 0.02 30)", fontFamily: "'Playfair Display', serif" }}>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
             주문 취합
           </h1>
-          <p className="text-sm" style={{ color: "oklch(0.52 0.02 30)" }}>
+          <p className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
             {today} &mdash; 실시간 신청 현황
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function SummaryPage() {
             onClick={handleCopyAll}
             disabled={!summary || summary.length === 0}
             className="gap-2"
-            style={{ background: "oklch(0.22 0.04 30)", color: "oklch(0.88 0.07 75)" }}
+            style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}
           >
             <Copy className="w-4 h-4" />
             전체 복사
@@ -103,13 +103,13 @@ export default function SummaryPage() {
           label="총 신청 인원"
           value={orders?.length ?? 0}
           unit="명"
-          color="oklch(0.22 0.04 30)"
+          color="oklch(0.35 0.08 250)"
         />
         <StatCard
           label="오늘의 식당"
           value={todayRestaurants?.length ?? 0}
           unit="곳"
-          color="oklch(0.45 0.10 65)"
+          color="oklch(0.55 0.18 250)"
         />
         <StatCard
           label="식당별 주문"
@@ -154,13 +154,13 @@ export default function SummaryPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                          style={{ background: "oklch(0.22 0.04 30)" }}>
-                          <span className="text-sm font-bold" style={{ color: "oklch(0.72 0.12 75)" }}>
+                          style={{ background: "oklch(0.35 0.08 250)" }}>
+                          <span className="text-sm font-bold" style={{ color: "oklch(0.55 0.18 250)" }}>
                             {totalCount}
                           </span>
                         </div>
                         <div>
-                          <div className="font-semibold" style={{ color: "oklch(0.18 0.02 30)" }}>
+                          <div className="font-semibold" style={{ color: "oklch(0.20 0.03 250)" }}>
                             {group.restaurant}
                           </div>
                           <div className="text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
@@ -195,7 +195,7 @@ export default function SummaryPage() {
                               {item.menu}
                             </span>
                             <span className="font-bold text-sm px-2.5 py-0.5 rounded-full"
-                              style={{ background: "oklch(0.22 0.04 30)", color: "oklch(0.88 0.07 75)" }}>
+                              style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}>
                               × {item.count}
                             </span>
                           </div>
@@ -231,7 +231,7 @@ export default function SummaryPage() {
                   {orders.map((order, idx) => (
                     <tr key={order.id}
                       style={{ borderBottom: idx < orders.length - 1 ? "1px solid oklch(0.93 0.005 60)" : "none" }}>
-                      <td className="px-4 py-3 font-medium" style={{ color: "oklch(0.22 0.04 30)" }}>
+                      <td className="px-4 py-3 font-medium" style={{ color: "oklch(0.35 0.08 250)" }}>
                         {order.employeeNickname}
                       </td>
                       <td className="px-4 py-3" style={{ color: "oklch(0.42 0.03 30)" }}>
@@ -265,7 +265,7 @@ export default function SummaryPage() {
                 onClick={handleCopyAll}
                 disabled={!summary || summary.length === 0}
                 className="gap-2"
-                style={{ background: "oklch(0.22 0.04 30)", color: "oklch(0.88 0.07 75)" }}
+                style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}
               >
                 <Copy className="w-4 h-4" />
                 복사

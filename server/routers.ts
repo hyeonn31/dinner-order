@@ -3,6 +3,8 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { sql, eq } from "drizzle-orm";
+import { employees } from "../drizzle/schema";
 import {
   getAllRestaurantsWithCategories,
   getMenusByRestaurant,
@@ -15,6 +17,7 @@ import {
   deleteOrder,
   resetTodayData,
   getOrderSummary,
+  getDb,
 } from "./db";
 
 function getToday() {
@@ -44,12 +47,50 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await getMenusByRestaurant(input.restaurantId);
       }),
+    addRestaurant: publicProcedure.input(z.object({ name: z.string().min(1), categoryId: z.number() })).mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      // TODO: Implement restaurant addition
+      return { success: true };
+    }),
+    deleteRestaurant: publicProcedure.input(z.object({ restaurantId: z.number() })).mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      // TODO: Implement restaurant deletion
+      return { success: true };
+    }),
+    addMenu: publicProcedure.input(z.object({ restaurantId: z.number(), name: z.string().min(1), itemType: z.string() })).mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      // TODO: Implement menu addition
+      return { success: true };
+    }),
+    deleteMenu: publicProcedure.input(z.object({ menuId: z.number() })).mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      // TODO: Implement menu deletion
+      return { success: true };
+    }),
   }),
 
   // ─── 직원 ─────────────────────────────────────────────────
   employee: router({
     list: publicProcedure.query(async () => {
       return await getAllEmployees();
+    }),
+    add: publicProcedure.input(z.object({ nickname: z.string().min(1) })).mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const maxSort = await db.select({ max: sql<number>`MAX(${employees.sortOrder})` }).from(employees);
+      const nextSort = (maxSort[0]?.max || 0) + 1;
+      await db.insert(employees).values({ nickname: input.nickname, sortOrder: nextSort, isActive: true });
+      return { success: true };
+    }),
+    delete: publicProcedure.input(z.object({ employeeId: z.number() })).mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      await db.update(employees).set({ isActive: false }).where(eq(employees.id, input.employeeId));
+      return { success: true };
     }),
   }),
 
