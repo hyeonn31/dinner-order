@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as total_menus FROM menu_items; SELECT restaurantId, name, itemType, COUNT(*) as count FROM menu_items GROUP BY restaurantId, name, itemType HAVING count > 1 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT COUNT(*) as total_menus FROM menu_items; SELECT restaurantId, name, itemType, COUNT(*) as count FROM menu_items GROUP BY restaurantId, name, itemType HAVING count > 1 LIMIT 10;",
+  "rows": [
+    {
+      "total_menus": "232"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_menus\n232\n",
+  "stderr": "",
+  "execution_time_ms": 2138
+}

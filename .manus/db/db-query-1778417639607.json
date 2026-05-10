@@ -1,0 +1,130 @@
+{
+  "query": "SELECT restaurantId, name, itemType, COUNT(*) as count FROM menu_items GROUP BY restaurantId, name, itemType HAVING count > 1 LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT restaurantId, name, itemType, COUNT(*) as count FROM menu_items GROUP BY restaurantId, name, itemType HAVING count > 1 LIMIT 20;",
+  "rows": [
+    {
+      "restaurantId": "5",
+      "name": "저녁식사 안해용",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "7",
+      "name": "고추냉이김밥 + 닭강정",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "16",
+      "name": "유자간장",
+      "itemType": "option",
+      "count": "2"
+    },
+    {
+      "restaurantId": "14",
+      "name": "토마토파스타 + 닭꼬치 1P",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "7",
+      "name": "오토닭강정 (청양고추 토핑 빼기)",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "17",
+      "name": "닭가슴살 샐러드박스 S",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "19",
+      "name": "에그불고기버거 세트",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "18",
+      "name": "불싸이버거 세트",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "10",
+      "name": "에비덴뿌라 온우동정식(온우동+새우튀김+단호박+텐뿌라)",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "5",
+      "name": "가츠동",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "15",
+      "name": "칠리베이컨 포케볼",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "11",
+      "name": "봉골레 파스타",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "1",
+      "name": "바싹불고기 반상",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "10",
+      "name": "저녁식사 안해용",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "15",
+      "name": "타바스코오리엔탈",
+      "itemType": "side",
+      "count": "2"
+    },
+    {
+      "restaurantId": "9",
+      "name": "치폴레",
+      "itemType": "option",
+      "count": "2"
+    },
+    {
+      "restaurantId": "3",
+      "name": "간장불고기 도시락",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "8",
+      "name": "리얼스팸김치 볶음밥",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "15",
+      "name": "로스트 닭다리살 샐러드",
+      "itemType": "main",
+      "count": "2"
+    },
+    {
+      "restaurantId": "18",
+      "name": "저녁식사 안해용",
+      "itemType": "main",
+      "count": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "restaurantId\tname\titemType\tcount\n5\t저녁식사 안해용\tmain\t2\n7\t고추냉이김밥 + 닭강정\tmain\t2\n16\t유자간장\toption\t2\n14\t토마토파스타 + 닭꼬치 1P\tmain\t2\n7\t오토닭강정 (청양고추 토핑 빼기)\tmain\t2\n17\t닭가슴살 샐러드박스 S\tmain\t2\n19\t에그불고기버거 세트\tmain\t2\n18\t불싸이버거 세트\tmain\t2\n10\t에비덴뿌라 온우동정식(온우동+새우튀김+단호박+텐뿌라)\tmain\t2\n5\t가츠동\tmain\t2\n15\t칠리베이컨 포케볼\tmain\t2\n11\t봉골레 파스타\tmain\t2\n1\t바싹불고기 반상\tmain\t2\n10\t저녁식사 안해용\tmain\t2\n15\t타바스코오리엔탈\tside\t2\n9\t치폴레\toption\t2\n3\t간장불고기 도시락\tmain\t2\n8\t리얼스팸김치 볶음밥\tmain\t2\n15\t로스트 닭다리살 샐러드\tmain\t2\n18\t저녁식사 안해용\tmain\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1835
+}

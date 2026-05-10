@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM menu_items WHERE id NOT IN (\n  SELECT max_id FROM (\n    SELECT MAX(id) as max_id FROM menu_items GROUP BY restaurantId, name, itemType\n  ) t\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute DELETE FROM menu_items WHERE id NOT IN (\n  SELECT max_id FROM (\n    SELECT MAX(id) as max_id FROM menu_items GROUP BY restaurantId, name, itemType\n  ) t\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1923
+}

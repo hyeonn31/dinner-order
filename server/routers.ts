@@ -74,6 +74,11 @@ export const appRouter = router({
       adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
+      const existing = await db.select().from(menuItems).where(eq(menuItems.restaurantId, input.restaurantId)).limit(1);
+      const isDuplicate = existing.some(m => m.name === input.name && m.itemType === input.itemType);
+      if (isDuplicate) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "이미 존재하는 메뉴입니다" });
+      }
       await db.insert(menuItems).values({ restaurantId: input.restaurantId, name: input.name, itemType: input.itemType as any });
       return { success: true };
     }),

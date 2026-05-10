@@ -55,3 +55,7 @@
 - [x] 식당 라우터 (restaurant.addRestaurant, restaurant.deleteRestaurant, restaurant.addMenu, restaurant.deleteMenu) 비밀번호 검증
 - [x] 테스트 업데이트 - 비밀번호 파라미터 추가 (11개 테스트 모두 통과)
 - [x] 프론트엔드 API 호출 업데이트 - 모든 관리 기능에 비밀번호 자동 전송
+
+
+## 버그 수정 (4차)
+- [x] OrderPage 메뉴 중복 표시 오류 - 데이터베이스 중복 메뉴 제거 완료
