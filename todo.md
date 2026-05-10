@@ -37,3 +37,8 @@
 ✅ 2. 식당/메뉴 관리 기능 - RestaurantManagePage에서 식당 및 메뉴 관리 가능
 ✅ 3. 직원 신청 페이지 검색 기능 - 이름 검색으로 빠른 선택 가능
 ✅ 4. 푸른색 고딕 테마 - 깔끔한 Noto Sans KR 폰트, 푸른색(#250도) 컬러 스킴
+
+
+## 버그 수정 (사용자 보고)
+- [x] RestaurantManagePage 식당 추가 버튼 작동 안 함 - API 연결 완료
+- [x] RestaurantManagePage 메뉴 추가 버튼 작동 안 함 - API 연결 완료

@@ -7,6 +7,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Plus, Trash2, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function RestaurantManagePage() {
   const utils = trpc.useUtils();
@@ -16,6 +25,8 @@ export default function RestaurantManagePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [newMenuName, setNewMenuName] = useState("");
   const [selectedMenuType, setSelectedMenuType] = useState<string>("main");
+  const [deleteRestaurantId, setDeleteRestaurantId] = useState<number | null>(null);
+  const [deleteMenuId, setDeleteMenuId] = useState<number | null>(null);
 
   const categories = [
     { id: 1, name: "한식" },
@@ -28,7 +39,7 @@ export default function RestaurantManagePage() {
     { value: "main", label: "메인메뉴" },
     { value: "side", label: "사이드" },
     { value: "drink", label: "음료" },
-    { value: "extra", label: "추가옵션" },
+    { value: "option", label: "추가옵션" },
   ];
 
   const selectedRestaurant = restaurants?.find(r => r.id === selectedRestaurantId);
@@ -36,6 +47,95 @@ export default function RestaurantManagePage() {
     { restaurantId: selectedRestaurantId || 0 },
     { enabled: !!selectedRestaurantId }
   );
+
+  // 식당 추가
+  const addRestaurantMutation = trpc.restaurant.addRestaurant.useMutation({
+    onSuccess: () => {
+      toast.success("식당이 추가되었습니다");
+      setNewRestaurantName("");
+      setSelectedCategory("");
+      utils.restaurant.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`식당 추가 실패: ${error.message}`);
+    },
+  });
+
+  // 식당 삭제
+  const deleteRestaurantMutation = trpc.restaurant.deleteRestaurant.useMutation({
+    onSuccess: () => {
+      toast.success("식당이 삭제되었습니다");
+      utils.restaurant.list.invalidate();
+      setDeleteRestaurantId(null);
+    },
+    onError: (error) => {
+      toast.error(`식당 삭제 실패: ${error.message}`);
+    },
+  });
+
+  // 메뉴 추가
+  const addMenuMutation = trpc.restaurant.addMenu.useMutation({
+    onSuccess: () => {
+      toast.success("메뉴가 추가되었습니다");
+      setNewMenuName("");
+      setSelectedMenuType("main");
+      utils.restaurant.menus.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`메뉴 추가 실패: ${error.message}`);
+    },
+  });
+
+  // 메뉴 삭제
+  const deleteMenuMutation = trpc.restaurant.deleteMenu.useMutation({
+    onSuccess: () => {
+      toast.success("메뉴가 삭제되었습니다");
+      utils.restaurant.menus.invalidate();
+      setDeleteMenuId(null);
+    },
+    onError: (error) => {
+      toast.error(`메뉴 삭제 실패: ${error.message}`);
+    },
+  });
+
+  const handleAddRestaurant = () => {
+    if (!newRestaurantName.trim()) {
+      toast.error("식당 이름을 입력하세요");
+      return;
+    }
+    if (!selectedCategory) {
+      toast.error("카테고리를 선택하세요");
+      return;
+    }
+    addRestaurantMutation.mutate({
+      name: newRestaurantName,
+      categoryId: parseInt(selectedCategory),
+    });
+  };
+
+  const handleDeleteRestaurant = (restaurantId: number) => {
+    deleteRestaurantMutation.mutate({ restaurantId });
+  };
+
+  const handleAddMenu = () => {
+    if (!newMenuName.trim()) {
+      toast.error("메뉴 이름을 입력하세요");
+      return;
+    }
+    if (!selectedRestaurantId) {
+      toast.error("식당을 선택하세요");
+      return;
+    }
+    addMenuMutation.mutate({
+      restaurantId: selectedRestaurantId,
+      name: newMenuName,
+      itemType: selectedMenuType,
+    });
+  };
+
+  const handleDeleteMenu = (menuId: number) => {
+    deleteMenuMutation.mutate({ menuId });
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -77,9 +177,19 @@ export default function RestaurantManagePage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button className="bg-accent hover:bg-accent/90">
-                    <Plus className="w-4 h-4" />
-                    추가
+                  <Button 
+                    onClick={handleAddRestaurant}
+                    disabled={addRestaurantMutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {addRestaurantMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        추가
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
@@ -93,7 +203,7 @@ export default function RestaurantManagePage() {
               <CardContent>
                 {restaurantsLoading ? (
                   <div className="flex justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
                   </div>
                 ) : restaurants && restaurants.length > 0 ? (
                   <div className="space-y-2">
@@ -107,7 +217,15 @@ export default function RestaurantManagePage() {
                           <p className="font-medium text-foreground">{restaurant.name}</p>
                           <p className="text-sm text-muted-foreground">{restaurant.categoryName}</p>
                         </div>
-                        <Button variant="ghost" size="sm" className="text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteRestaurantId(restaurant.id);
+                          }}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -171,9 +289,19 @@ export default function RestaurantManagePage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button className="bg-accent hover:bg-accent/90">
-                        <Plus className="w-4 h-4" />
-                        추가
+                      <Button 
+                        onClick={handleAddMenu}
+                        disabled={addMenuMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {addMenuMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4" />
+                            추가
+                          </>
+                        )}
                       </Button>
                     </div>
                   </CardContent>
@@ -187,7 +315,7 @@ export default function RestaurantManagePage() {
                   <CardContent>
                     {menusLoading ? (
                       <div className="flex justify-center py-8">
-                        <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
                       </div>
                     ) : menus && menus.length > 0 ? (
                       <div className="space-y-2">
@@ -202,7 +330,12 @@ export default function RestaurantManagePage() {
                                 {menuTypes.find(t => t.value === menu.itemType)?.label}
                               </p>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-destructive">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-destructive"
+                              onClick={() => setDeleteMenuId(menu.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -220,6 +353,48 @@ export default function RestaurantManagePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* 식당 삭제 확인 다이얼로그 */}
+      <AlertDialog open={deleteRestaurantId !== null} onOpenChange={(open) => !open && setDeleteRestaurantId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>식당 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              이 식당을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteRestaurantId && handleDeleteRestaurant(deleteRestaurantId)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              삭제
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 메뉴 삭제 확인 다이얼로그 */}
+      <AlertDialog open={deleteMenuId !== null} onOpenChange={(open) => !open && setDeleteMenuId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>메뉴 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              이 메뉴를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMenuId && handleDeleteMenu(deleteMenuId)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              삭제
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

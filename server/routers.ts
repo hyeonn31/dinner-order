@@ -4,7 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { sql, eq } from "drizzle-orm";
-import { employees } from "../drizzle/schema";
+import { employees, restaurants, menuItems } from "../drizzle/schema";
 import {
   getAllRestaurantsWithCategories,
   getMenusByRestaurant,
@@ -50,25 +50,25 @@ export const appRouter = router({
     addRestaurant: publicProcedure.input(z.object({ name: z.string().min(1), categoryId: z.number() })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      // TODO: Implement restaurant addition
+      await db.insert(restaurants).values({ name: input.name, categoryId: input.categoryId });
       return { success: true };
     }),
     deleteRestaurant: publicProcedure.input(z.object({ restaurantId: z.number() })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      // TODO: Implement restaurant deletion
+      await db.delete(restaurants).where(eq(restaurants.id, input.restaurantId));
       return { success: true };
     }),
     addMenu: publicProcedure.input(z.object({ restaurantId: z.number(), name: z.string().min(1), itemType: z.string() })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      // TODO: Implement menu addition
+      await db.insert(menuItems).values({ restaurantId: input.restaurantId, name: input.name, itemType: input.itemType as any });
       return { success: true };
     }),
     deleteMenu: publicProcedure.input(z.object({ menuId: z.number() })).mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      // TODO: Implement menu deletion
+      await db.delete(menuItems).where(eq(menuItems.id, input.menuId));
       return { success: true };
     }),
   }),
