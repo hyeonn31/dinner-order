@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { UtensilsCrossed, Settings, ClipboardList, BarChart3 } from "lucide-react";
+import { UtensilsCrossed, Settings, ClipboardList, BarChart3, Users, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const navItems = [
   { path: "/order", label: "저녁 신청", icon: UtensilsCrossed, desc: "메뉴를 선택하세요" },
@@ -15,6 +16,7 @@ const manageItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [showManageMenu, setShowManageMenu] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "oklch(0.97 0.01 250)" }}>
@@ -61,6 +63,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </Link>
                 );
               })}
+              
+              {/* Manage Dropdown */}
+              <div className="relative" onMouseEnter={() => setShowManageMenu(true)} onMouseLeave={() => setShowManageMenu(false)}>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white/60 hover:text-white/90 hover:bg-white/5 transition-all duration-200">
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline">관리</span>
+                </button>
+                {showManageMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                    {manageItems.map(({ path, label }) => (
+                      <Link key={path} href={path}>
+                        <div className="px-4 py-3 hover:bg-blue-50 text-gray-800 text-sm cursor-pointer first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0 border-gray-100">
+                          {label}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
         </div>
