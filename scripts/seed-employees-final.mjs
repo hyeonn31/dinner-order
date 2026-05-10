@@ -21,7 +21,7 @@ try {
     'Ben', 'Hank', 'Campbell', 'Arc', 'Eisen', 'Mark', 'Vivian', 'Pabian', 'Kai', 'Brian',
     'Howl', 'Luiz', 'Winter', 'Loey', 'Opal', 'Herta', 'Zain', 'Beck', 'Kirk', 'Andy',
     'Bourbon', 'Hia', 'Oliver', 'Doyle', 'Owen', 'Zen', 'Arthur', 'Sean', 'Cony', 'Holmes',
-    'Dani', 'Dylon'
+    'Dani', 'Dylon' , 'Flash'
   ];
 
   // 직원 추가
