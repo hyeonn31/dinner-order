@@ -20,11 +20,62 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 
 const ADMIN_PASSWORD = "2101";
 
-export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+function PasswordPrompt({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleSubmit = () => {
+    if (password === ADMIN_PASSWORD) {
+      onSuccess();
+      toast.success("관리자 페이지에 접근했습니다.");
+    } else {
+      toast.error("비밀번호가 틀렸습니다.");
+      setPassword("");
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.35 0.08 250)" }}>
+              <Lock className="w-6 h-6" style={{ color: "oklch(0.85 0.15 250)" }} />
+            </div>
+          </div>
+          <CardTitle>관리자 페이지</CardTitle>
+          <CardDescription>비밀번호를 입력하세요</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+              className="pr-10"
+            />
+            <button
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+          <Button
+            onClick={handleSubmit}
+            className="w-full bg-blue-600 hover:bg-blue-700"
+          >
+            접근
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function AdminContent() {
   const utils = trpc.useUtils();
   const { data: allRestaurants, isLoading } = trpc.restaurant.list.useQuery();
   const { data: todaySettings } = trpc.daily.todayRestaurants.useQuery();
@@ -37,59 +88,6 @@ export default function AdminPage() {
       setSelected(new Set(todaySettings.map(s => s.restaurantId)));
     }
   }, [todaySettings]);
-
-  const handlePasswordSubmit = () => {
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      setPassword("");
-      toast.success("관리자 페이지에 접근했습니다.");
-    } else {
-      toast.error("비밀번호가 틀렸습니다.");
-      setPassword("");
-    }
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.35 0.08 250)" }}>
-                <Lock className="w-6 h-6" style={{ color: "oklch(0.85 0.15 250)" }} />
-              </div>
-            </div>
-            <CardTitle>관리자 페이지</CardTitle>
-            <CardDescription>비밀번호를 입력하세요</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
-                className="pr-10"
-              />
-              <button
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            <Button
-              onClick={handlePasswordSubmit}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              접근
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const setRestaurantsMutation = trpc.daily.setRestaurants.useMutation({
     onSuccess: () => {
@@ -234,4 +232,14 @@ export default function AdminPage() {
       </div>
     </div>
   );
+}
+
+export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  if (!isAuthenticated) {
+    return <PasswordPrompt onSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  return <AdminContent />;
 }
