@@ -15,6 +15,13 @@
       "when": 1778402049020,
       "tag": "0001_salty_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778422299274,
+      "tag": "0002_mighty_arclight",
+      "breakpoints": true
     }
   ]
 }

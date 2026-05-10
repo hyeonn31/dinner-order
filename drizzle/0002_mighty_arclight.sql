@@ -1,0 +1,1 @@
+ALTER TABLE `daily_settings` ADD `isClosed` boolean DEFAULT false NOT NULL;

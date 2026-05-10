@@ -64,6 +64,7 @@ export const dailySettings = mysqlTable("daily_settings", {
   settingDate: date("settingDate").notNull(),
   restaurantId: int("restaurantId").notNull(),
   isActive: boolean("isActive").default(true).notNull(),
+  isClosed: boolean("isClosed").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

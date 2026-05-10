@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Check, RefreshCw, Store, AlertTriangle, Lock, Eye, EyeOff } from "lucide-react";
+import { Check, RefreshCw, Store, AlertTriangle, Lock, Eye, EyeOff, Lock as LockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,6 +82,7 @@ function AdminContent() {
   const { data: todayOrders } = trpc.order.todayAll.useQuery();
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [isClosed, setIsClosed] = useState(false);
 
   useEffect(() => {
     if (todaySettings) {
@@ -126,6 +127,18 @@ function AdminContent() {
     resetMutation.mutate({ password: ADMIN_PASSWORD });
   };
 
+  const toggleClosedMutation = trpc.daily.toggleClosed.useMutation({
+    onSuccess: (data) => {
+      setIsClosed(data.isClosed);
+      toast.success(data.isClosed ? "신청이 마감되었습니다." : "신청이 다시 열렸습니다.");
+    },
+    onError: () => toast.error("상태 변경 중 오류가 발생했습니다."),
+  });
+
+  const handleToggleClosed = () => {
+    toggleClosedMutation.mutate({ password: ADMIN_PASSWORD });
+  };
+
   const groupedByCategory = allRestaurants?.reduce((acc, r) => {
     if (!acc[r.categoryName]) acc[r.categoryName] = [];
     acc[r.categoryName].push(r);
@@ -139,6 +152,21 @@ function AdminContent() {
           <h1 className="text-3xl font-bold mb-2" style={{ color: "oklch(0.20 0.03 250)" }}>관리자 페이지</h1>
           <p className="text-muted-foreground">오늘의 식당을 선택하고 관리하세요</p>
         </div>
+
+        {/* Closed Status Alert */}
+        {isClosed && (
+          <Card className="mb-6" style={{ background: "oklch(0.95 0.08 30)", border: "1px solid oklch(0.75 0.15 30)" }}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <LockIcon className="w-5 h-5 flex-shrink-0" style={{ color: "oklch(0.55 0.18 30)" }} />
+                <div>
+                  <p className="font-semibold" style={{ color: "oklch(0.30 0.10 30)" }}>신청이 마감되었습니다</p>
+                  <p className="text-sm" style={{ color: "oklch(0.50 0.08 30)" }}>직원들이 더 이상 신청할 수 없습니다. &quot;오픈&quot; 버튼으로 다시 열 수 있습니다.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Status */}
         <Card className="mb-6">
@@ -188,20 +216,28 @@ function AdminContent() {
         </Card>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <Button
             onClick={handleSave}
             disabled={setRestaurantsMutation.isPending}
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
+            className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700"
           >
             {setRestaurantsMutation.isPending ? "저장 중..." : "저장"}
+          </Button>
+
+          <Button
+            onClick={handleToggleClosed}
+            disabled={toggleClosedMutation.isPending}
+            className={`flex-1 min-w-[120px] ${isClosed ? "bg-green-600 hover:bg-green-700" : "bg-orange-600 hover:bg-orange-700"}`}
+          >
+            {toggleClosedMutation.isPending ? (isClosed ? "오픈 중..." : "마감 중...") : (isClosed ? "오픈" : "마감")}
           </Button>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 min-w-[120px]"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 초기화

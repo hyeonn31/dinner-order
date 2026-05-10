@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Search } from "lucide-react";
+import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Search, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 const DRINK_OPTIONS = ["선택 안함", "제로콜라", "펩시제로", "사이다제로", "콜라", "사이다"];
 
@@ -24,11 +25,38 @@ export default function OrderPage() {
   const [note, setNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
+  const [isClosed, setIsClosed] = useState(false);
 
   const { data: menus } = trpc.restaurant.menus.useQuery(
     { restaurantId: selectedRestaurantId! },
     { enabled: !!selectedRestaurantId }
   );
+
+  // 마감 상태 폴링 (5초마다 확인)
+  useEffect(() => {
+    if (todayRestaurants && todayRestaurants.length > 0) {
+      setIsClosed(todayRestaurants[0].isClosed || false);
+    }
+  }, [todayRestaurants]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      utils.daily.todayRestaurants.invalidate();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [utils]);
+
+  // 음료 기본값 설정 - 햄버거 제외 전부 제로콜라
+  useEffect(() => {
+    if (selectedRestaurantId && todayRestaurants) {
+      const restaurant = todayRestaurants.find(r => r.id === selectedRestaurantId);
+      if (restaurant && restaurant.categoryName !== "햄버거") {
+        setDrinkOption("제로콜라");
+      } else {
+        setDrinkOption("");
+      }
+    }
+  }, [selectedRestaurantId, todayRestaurants]);
 
   const submitMutation = trpc.order.submit.useMutation({
     onSuccess: () => {
@@ -53,6 +81,10 @@ export default function OrderPage() {
   });
 
   const handleSubmit = () => {
+    if (isClosed) {
+      toast.error("신청이 마감되었습니다");
+      return;
+    }
     if (!selectedEmployeeId) return toast.error("이름을 선택해 주세요.");
     if (!selectedRestaurantId) return toast.error("식당을 선택해 주세요.");
     if (!mainMenu) return toast.error("메인 메뉴를 선택해 주세요.");
@@ -95,6 +127,17 @@ export default function OrderPage() {
           이름을 선택하고 원하는 메뉴를 신청하세요
         </p>
       </div>
+
+      {/* 마감 안내 메시지 */}
+      {isClosed && (
+        <div className="mb-6 p-4 rounded-lg flex gap-3" style={{ background: "oklch(0.95 0.08 30)", border: "1px solid oklch(0.75 0.15 30)" }}>
+          <Lock className="w-5 h-5 flex-shrink-0" style={{ color: "oklch(0.55 0.18 30)" }} />
+          <div>
+            <p className="font-medium mb-1" style={{ color: "oklch(0.30 0.10 30)" }}>신청이 마감되었습니다</p>
+            <p className="text-sm" style={{ color: "oklch(0.50 0.08 30)" }}>더 이상 신청을 받지 않습니다. 관리자 페이지에서 다시 열어주세요.</p>
+          </div>
+        </div>
+      )}
 
       {/* 오류 메시지 */}
       {hasNoSetup && (
@@ -199,10 +242,10 @@ export default function OrderPage() {
                       <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>사이드</div>
                       <Select value={sideMenu} onValueChange={setSideMenu}>
                         <SelectTrigger className="w-full h-11">
-                          <SelectValue placeholder="사이드 (선택사항)" />
+                          <SelectValue placeholder="사이드를 선택하세요" />
                         </SelectTrigger>
                         <SelectContent className="max-h-64">
-                          <SelectItem value="none">선택 안함</SelectItem>
+                          <SelectItem value="">선택 안함</SelectItem>
                           {sideMenus.map((m: any) => (
                             <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                           ))}
@@ -211,16 +254,42 @@ export default function OrderPage() {
                     </div>
                   )}
 
+                  {/* 음료 */}
+                  {drinkMenus.length > 0 || todayRestaurants?.find(r => r.id === selectedRestaurantId)?.categoryName !== "햄버거" ? (
+                    <div>
+                      <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>음료</div>
+                      <Select value={drinkOption} onValueChange={setDrinkOption}>
+                        <SelectTrigger className="w-full h-11">
+                          <SelectValue placeholder="음료를 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {drinkMenus.length > 0 ? (
+                            <>
+                              <SelectItem value="">선택 안함</SelectItem>
+                              {drinkMenus.map((m: any) => (
+                                <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                              ))}
+                            </>
+                          ) : (
+                            DRINK_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : null}
+
                   {/* 추가 옵션 */}
                   {optionMenus.length > 0 && (
                     <div>
                       <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>추가 옵션</div>
                       <Select value={extraOption} onValueChange={setExtraOption}>
                         <SelectTrigger className="w-full h-11">
-                          <SelectValue placeholder="추가 옵션 (선택사항)" />
+                          <SelectValue placeholder="추가 옵션을 선택하세요" />
                         </SelectTrigger>
                         <SelectContent className="max-h-64">
-                          <SelectItem value="none">선택 안함</SelectItem>
+                          <SelectItem value="">선택 안함</SelectItem>
                           {optionMenus.map((m: any) => (
                             <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                           ))}
@@ -229,29 +298,15 @@ export default function OrderPage() {
                     </div>
                   )}
 
-                  {/* 음료 */}
-                  <div>
-                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>음료</div>
-                    <Select value={drinkOption} onValueChange={setDrinkOption}>
-                      <SelectTrigger className="w-full h-11">
-                        <SelectValue placeholder="음료 (선택사항)" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-64">
-                        {DRINK_OPTIONS.map((option) => (
-                          <SelectItem key={option} value={option}>{option}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   {/* 특수 요청 */}
                   <div>
-                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>특수 요청 (선택사항)</div>
+                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>특수 요청</div>
                     <Textarea
-                      placeholder="예: 맵게 해주세요, 소스 별도 등..."
+                      placeholder="특수 요청사항이 있으면 입력하세요 (예: 맵게, 덜 맵게, 소스 제외 등)"
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      className="h-20 resize-none"
+                      className="resize-none"
+                      rows={3}
                     />
                   </div>
                 </div>
@@ -259,24 +314,30 @@ export default function OrderPage() {
             )}
 
             {/* Submit Button */}
-            {selectedEmployeeId && selectedRestaurantId && mainMenu && (
-              <div className="p-6">
+            {selectedEmployeeId && selectedRestaurantId && (
+              <div className="p-6 flex gap-2">
                 <Button
                   onClick={handleSubmit}
-                  disabled={submitMutation.isPending}
-                  className="w-full h-12 font-semibold text-base bg-accent hover:bg-accent/90"
+                  disabled={submitMutation.isPending || isClosed}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {submitMutation.isPending ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      신청 중...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      신청하기
-                    </>
-                  )}
+                  <Send className="w-4 h-4 mr-2" />
+                  {submitMutation.isPending ? "신청 중..." : "신청하기"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSelectedEmployeeId(null);
+                    setSelectedRestaurantId(null);
+                    setMainMenu("");
+                    setSideMenu("");
+                    setDrinkOption("");
+                    setExtraOption("");
+                    setNote("");
+                  }}
+                  variant="outline"
+                  className="px-4"
+                >
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
             )}

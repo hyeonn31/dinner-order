@@ -115,6 +115,7 @@ export async function getTodaySettings(today: string) {
       restaurantName: restaurants.name,
       categoryId: restaurantCategories.id,
       categoryName: restaurantCategories.name,
+      isClosed: dailySettings.isClosed,
     })
     .from(dailySettings)
     .innerJoin(restaurants, eq(dailySettings.restaurantId, restaurants.id))

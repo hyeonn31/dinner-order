@@ -5,7 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { sql, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { employees, restaurants, menuItems } from "../drizzle/schema";
+import { employees, restaurants, menuItems, dailySettings } from "../drizzle/schema";
 import {
   getAllRestaurantsWithCategories,
   getMenusByRestaurant,
@@ -135,6 +135,21 @@ export const appRouter = router({
         const today = getToday();
         await resetTodayData(today);
         return { success: true };
+      }),
+    toggleClosed: publicProcedure
+      .input(z.object({ password: z.string() }))
+      .mutation(async ({ input }) => {
+        adminProcedure(input.password);
+        const today = getToday();
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        const existing = await db.select().from(dailySettings).where(sql`DATE(settingDate) = ${today}`).limit(1);
+        if (existing.length === 0) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "오늘의 설정이 없습니다" });
+        }
+        const current = existing[0];
+        await db.update(dailySettings).set({ isClosed: !current.isClosed }).where(eq(dailySettings.id, current.id));
+        return { success: true, isClosed: !current.isClosed };
       }),
   }),
 
