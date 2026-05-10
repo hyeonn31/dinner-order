@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { sql, eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { employees, restaurants, menuItems } from "../drizzle/schema";
 import {
   getAllRestaurantsWithCategories,
@@ -19,6 +20,14 @@ import {
   getOrderSummary,
   getDb,
 } from "./db";
+
+const ADMIN_PASSWORD = "2101";
+
+function adminProcedure(password: string) {
+  if (password !== ADMIN_PASSWORD) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid admin password" });
+  }
+}
 
 function getToday() {
   const now = new Date();
@@ -47,25 +56,29 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await getMenusByRestaurant(input.restaurantId);
       }),
-    addRestaurant: publicProcedure.input(z.object({ name: z.string().min(1), categoryId: z.number() })).mutation(async ({ input }) => {
+    addRestaurant: publicProcedure.input(z.object({ name: z.string().min(1), categoryId: z.number(), password: z.string() })).mutation(async ({ input }) => {
+      adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       await db.insert(restaurants).values({ name: input.name, categoryId: input.categoryId });
       return { success: true };
     }),
-    deleteRestaurant: publicProcedure.input(z.object({ restaurantId: z.number() })).mutation(async ({ input }) => {
+    deleteRestaurant: publicProcedure.input(z.object({ restaurantId: z.number(), password: z.string() })).mutation(async ({ input }) => {
+      adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       await db.delete(restaurants).where(eq(restaurants.id, input.restaurantId));
       return { success: true };
     }),
-    addMenu: publicProcedure.input(z.object({ restaurantId: z.number(), name: z.string().min(1), itemType: z.string() })).mutation(async ({ input }) => {
+    addMenu: publicProcedure.input(z.object({ restaurantId: z.number(), name: z.string().min(1), itemType: z.string(), password: z.string() })).mutation(async ({ input }) => {
+      adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       await db.insert(menuItems).values({ restaurantId: input.restaurantId, name: input.name, itemType: input.itemType as any });
       return { success: true };
     }),
-    deleteMenu: publicProcedure.input(z.object({ menuId: z.number() })).mutation(async ({ input }) => {
+    deleteMenu: publicProcedure.input(z.object({ menuId: z.number(), password: z.string() })).mutation(async ({ input }) => {
+      adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       await db.delete(menuItems).where(eq(menuItems.id, input.menuId));
@@ -78,7 +91,8 @@ export const appRouter = router({
     list: publicProcedure.query(async () => {
       return await getAllEmployees();
     }),
-    add: publicProcedure.input(z.object({ nickname: z.string().min(1) })).mutation(async ({ input }) => {
+    add: publicProcedure.input(z.object({ nickname: z.string().min(1), password: z.string() })).mutation(async ({ input }) => {
+      adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       const maxSort = await db.select({ max: sql<number>`MAX(${employees.sortOrder})` }).from(employees);
@@ -86,7 +100,8 @@ export const appRouter = router({
       await db.insert(employees).values({ nickname: input.nickname, sortOrder: nextSort, isActive: true });
       return { success: true };
     }),
-    delete: publicProcedure.input(z.object({ employeeId: z.number() })).mutation(async ({ input }) => {
+    delete: publicProcedure.input(z.object({ employeeId: z.number(), password: z.string() })).mutation(async ({ input }) => {
+      adminProcedure(input.password);
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       await db.update(employees).set({ isActive: false }).where(eq(employees.id, input.employeeId));
@@ -101,17 +116,21 @@ export const appRouter = router({
       return await getTodaySettings(today);
     }),
     setRestaurants: publicProcedure
-      .input(z.object({ restaurantIds: z.array(z.number()) }))
+      .input(z.object({ restaurantIds: z.array(z.number()), password: z.string() }))
       .mutation(async ({ input }) => {
+        adminProcedure(input.password);
         const today = getToday();
         await setTodayRestaurants(today, input.restaurantIds);
         return { success: true, today };
       }),
-    reset: publicProcedure.mutation(async () => {
-      const today = getToday();
-      await resetTodayData(today);
-      return { success: true };
-    }),
+    reset: publicProcedure
+      .input(z.object({ password: z.string() }))
+      .mutation(async ({ input }) => {
+        adminProcedure(input.password);
+        const today = getToday();
+        await resetTodayData(today);
+        return { success: true };
+      }),
   }),
 
   // ─── 주문 ─────────────────────────────────────────────────

@@ -42,3 +42,16 @@
 ## 버그 수정 (사용자 보고)
 - [x] RestaurantManagePage 식당 추가 버튼 작동 안 함 - API 연결 완료
 - [x] RestaurantManagePage 메뉴 추가 버튼 작동 안 함 - API 연결 완료
+
+
+## 추가 요청사항 (2차)
+- [x] 관리자 페이지 비밀번호 보호 (2101)
+- [x] 관리 페이지(직원/식당 관리) 비밀번호 보호 (2101)
+- [x] 홈 페이지 부제 문구 삭제 ("\uc2dd장 선택부터 주문취합까지, 한 번에 해결하세요")
+
+## 서버측 비밀번호 보호 구현 (3차)
+- [x] 관리자 라우터 (daily.setRestaurants, daily.reset) 비밀번호 검증
+- [x] 직원 라우터 (employee.add, employee.delete) 비밀번호 검증
+- [x] 식당 라우터 (restaurant.addRestaurant, restaurant.deleteRestaurant, restaurant.addMenu, restaurant.deleteMenu) 비밀번호 검증
+- [x] 테스트 업데이트 - 비밀번호 파라미터 추가 (11개 테스트 모두 통과)
+- [x] 프론트엔드 API 호출 업데이트 - 모든 관리 기능에 비밀번호 자동 전송

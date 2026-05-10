@@ -20,9 +20,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold mb-3" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
           저녁식사 신청 시스템
         </h1>
-        <p className="text-lg" style={{ color: "oklch(0.50 0.03 250)" }}>
-          식당 선택부터 주문 취합까지, 한 번에 해결하세요
-        </p>
+
       </div>
 
       {/* Status Card */}

@@ -97,13 +97,13 @@ describe("daily router", () => {
 
   it("setRestaurants returns success", async () => {
     const caller = appRouter.createCaller(createPublicContext());
-    const result = await caller.daily.setRestaurants({ restaurantIds: [1, 2] });
+    const result = await caller.daily.setRestaurants({ restaurantIds: [1, 2], password: "2101" });
     expect(result.success).toBe(true);
   });
 
   it("reset returns success", async () => {
     const caller = appRouter.createCaller(createPublicContext());
-    const result = await caller.daily.reset();
+    const result = await caller.daily.reset({ password: "2101" });
     expect(result.success).toBe(true);
   });
 });

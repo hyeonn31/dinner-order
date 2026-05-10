@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Lock, Eye, EyeOff } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +17,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+const ADMIN_PASSWORD = "2101";
+
 export default function RestaurantManagePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handlePasswordSubmit = () => {
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setPassword("");
+      toast.success("관리 페이지에 접근했습니다.");
+    } else {
+      toast.error("비밀번호가 틀렸습니다.");
+      setPassword("");
+    }
+  };
+
   const utils = trpc.useUtils();
   const { data: restaurants, isLoading: restaurantsLoading } = trpc.restaurant.list.useQuery();
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
@@ -110,11 +127,12 @@ export default function RestaurantManagePage() {
     addRestaurantMutation.mutate({
       name: newRestaurantName,
       categoryId: parseInt(selectedCategory),
+      password: ADMIN_PASSWORD,
     });
   };
 
   const handleDeleteRestaurant = (restaurantId: number) => {
-    deleteRestaurantMutation.mutate({ restaurantId });
+    deleteRestaurantMutation.mutate({ restaurantId, password: ADMIN_PASSWORD });
   };
 
   const handleAddMenu = () => {
@@ -130,12 +148,55 @@ export default function RestaurantManagePage() {
       restaurantId: selectedRestaurantId,
       name: newMenuName,
       itemType: selectedMenuType,
+      password: ADMIN_PASSWORD,
     });
   };
 
   const handleDeleteMenu = (menuId: number) => {
-    deleteMenuMutation.mutate({ menuId });
+    deleteMenuMutation.mutate({ menuId, password: ADMIN_PASSWORD });
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.35 0.08 250)" }}>
+                <Lock className="w-6 h-6" style={{ color: "oklch(0.85 0.15 250)" }} />
+              </div>
+            </div>
+            <CardTitle>식당/메뉴 관리</CardTitle>
+            <CardDescription>비밀번호를 입력하세요</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
+                className="pr-10"
+              />
+              <button
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <Button
+              onClick={handlePasswordSubmit}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              접근
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">

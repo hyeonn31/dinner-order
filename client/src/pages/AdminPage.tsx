@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Check, RefreshCw, Store, AlertTriangle } from "lucide-react";
+import { Check, RefreshCw, Store, AlertTriangle, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -16,7 +18,13 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
   "햄버거": { bg: "oklch(0.95 0.05 60)", text: "oklch(0.42 0.12 60)", border: "oklch(0.78 0.10 60)" },
 };
 
+const ADMIN_PASSWORD = "2101";
+
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const utils = trpc.useUtils();
   const { data: allRestaurants, isLoading } = trpc.restaurant.list.useQuery();
   const { data: todaySettings } = trpc.daily.todayRestaurants.useQuery();
@@ -29,6 +37,59 @@ export default function AdminPage() {
       setSelected(new Set(todaySettings.map(s => s.restaurantId)));
     }
   }, [todaySettings]);
+
+  const handlePasswordSubmit = () => {
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setPassword("");
+      toast.success("관리자 페이지에 접근했습니다.");
+    } else {
+      toast.error("비밀번호가 틀렸습니다.");
+      setPassword("");
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.35 0.08 250)" }}>
+                <Lock className="w-6 h-6" style={{ color: "oklch(0.85 0.15 250)" }} />
+              </div>
+            </div>
+            <CardTitle>관리자 페이지</CardTitle>
+            <CardDescription>비밀번호를 입력하세요</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
+                className="pr-10"
+              />
+              <button
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <Button
+              onClick={handlePasswordSubmit}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              접근
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const setRestaurantsMutation = trpc.daily.setRestaurants.useMutation({
     onSuccess: () => {
@@ -49,184 +110,128 @@ export default function AdminPage() {
     onError: () => toast.error("초기화 중 오류가 발생했습니다."),
   });
 
-  const toggleRestaurant = (id: number) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const handleToggle = (restaurantId: number) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(restaurantId)) {
+      newSelected.delete(restaurantId);
+    } else {
+      newSelected.add(restaurantId);
+    }
+    setSelected(newSelected);
   };
 
   const handleSave = () => {
-    setRestaurantsMutation.mutate({ restaurantIds: Array.from(selected) });
+    setRestaurantsMutation.mutate({ restaurantIds: Array.from(selected), password: ADMIN_PASSWORD });
   };
 
-  // 카테고리별 그룹핑
-  const grouped = allRestaurants?.reduce((acc, r) => {
+  const handleReset = () => {
+    resetMutation.mutate({ password: ADMIN_PASSWORD });
+  };
+
+  const groupedByCategory = allRestaurants?.reduce((acc, r) => {
     if (!acc[r.categoryName]) acc[r.categoryName] = [];
     acc[r.categoryName].push(r);
     return acc;
-  }, {} as Record<string, typeof allRestaurants>) ?? {};
-
-  const today = new Date().toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "long" });
+  }, {} as Record<string, typeof allRestaurants>);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
-              관리자 설정
-            </h1>
-            <p className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
-              {today} &mdash; 오늘의 식당을 선택하세요
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* 초기화 버튼 */}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 text-red-600 border-red-200 hover:bg-red-50">
-                  <RefreshCw className="w-4 h-4" />
-                  오늘 초기화
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                    오늘 데이터 초기화
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    오늘의 식당 설정과 모든 신청 내역이 삭제됩니다.
-                    {todayOrders && todayOrders.length > 0 && (
-                      <strong className="block mt-2 text-red-600">
-                        현재 {todayOrders.length}명의 신청 내역이 삭제됩니다!
-                      </strong>
-                    )}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => resetMutation.mutate()}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    초기화
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "oklch(0.20 0.03 250)" }}>관리자 페이지</h1>
+          <p className="text-muted-foreground">오늘의 식당을 선택하고 관리하세요</p>
+        </div>
 
-            {/* 저장 버튼 */}
-            <Button
-              onClick={handleSave}
-              disabled={setRestaurantsMutation.isPending}
-              className="gap-2 font-medium"
-              style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}
-            >
-              <Check className="w-4 h-4" />
-              {setRestaurantsMutation.isPending ? "저장 중..." : `저장 (${selected.size}개 선택)`}
-            </Button>
-          </div>
+        {/* Status */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="w-5 h-5" style={{ color: "oklch(0.55 0.18 250)" }} />
+              오늘의 식당 ({selected.size}개 선택)
+            </CardTitle>
+            <CardDescription>
+              {todayOrders && todayOrders.length > 0 && `현재 ${todayOrders.length}명이 신청했습니다`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">로딩 중...</div>
+            ) : (
+              <>
+                {groupedByCategory && Object.entries(groupedByCategory).map(([category, restaurants]) => (
+                  <div key={category}>
+                    <h3 className="font-semibold mb-3 text-sm" style={{ color: CATEGORY_COLORS[category]?.text }}>
+                      {category}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                      {restaurants?.map(r => (
+                        <button
+                          key={r.id}
+                          onClick={() => handleToggle(r.id)}
+                          className="p-3 rounded-lg text-left transition-all"
+                          style={{
+                            background: selected.has(r.id) ? CATEGORY_COLORS[category]?.bg : "oklch(0.97 0.01 250)",
+                            border: `2px solid ${selected.has(r.id) ? CATEGORY_COLORS[category]?.border : "oklch(0.88 0.01 60)"}`,
+                            color: selected.has(r.id) ? CATEGORY_COLORS[category]?.text : "oklch(0.50 0.03 250)",
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{r.name}</span>
+                            {selected.has(r.id) && <Check className="w-5 h-5" />}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <Button
+            onClick={handleSave}
+            disabled={setRestaurantsMutation.isPending}
+            className="flex-1 bg-blue-600 hover:bg-blue-700"
+          >
+            {setRestaurantsMutation.isPending ? "저장 중..." : "저장"}
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="flex-1"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                초기화
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-orange-500" />
+                  오늘 데이터 초기화
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  이 작업은 되돌릴 수 없습니다. 오늘의 모든 신청 데이터가 삭제됩니다.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>취소</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleReset}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  초기화
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
-
-      {/* Selected Summary */}
-      {selected.size > 0 && (
-        <div className="rounded-xl p-4 mb-6 flex flex-wrap gap-2 items-center"
-          style={{ background: "oklch(0.97 0.03 70)", border: "1px solid oklch(0.72 0.12 75 / 0.3)" }}>
-          <span className="text-sm font-medium mr-2" style={{ color: "oklch(0.42 0.08 65)" }}>선택된 식당:</span>
-          {allRestaurants?.filter(r => selected.has(r.id)).map(r => (
-            <span key={r.id} className="px-3 py-1 rounded-full text-xs font-medium"
-              style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}>
-              {r.name}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Restaurant Grid by Category */}
-      {isLoading ? (
-        <div className="text-center py-12" style={{ color: "oklch(0.50 0.03 250)" }}>불러오는 중...</div>
-      ) : (
-        <div className="space-y-8">
-          {Object.entries(grouped).map(([category, restaurants]) => {
-            const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS["한식"];
-            return (
-              <div key={category}>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="px-3 py-1 rounded-full text-sm font-semibold"
-                    style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}>
-                    {category}
-                  </span>
-                  <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.01 60)" }} />
-                  <span className="text-xs" style={{ color: "oklch(0.65 0.02 60)" }}>
-                    {restaurants.filter(r => selected.has(r.id)).length}/{restaurants.length} 선택
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {restaurants.map(restaurant => {
-                    const isSelected = selected.has(restaurant.id);
-                    return (
-                      <button
-                        key={restaurant.id}
-                        onClick={() => toggleRestaurant(restaurant.id)}
-                        className="relative rounded-xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5"
-                        style={{
-                          background: isSelected ? "oklch(0.35 0.08 250)" : "white",
-                          border: isSelected
-                            ? "2px solid oklch(0.72 0.12 75 / 0.8)"
-                            : "1px solid oklch(0.88 0.01 60)",
-                          boxShadow: isSelected
-                            ? "0 4px 20px oklch(0.22 0.04 30 / 0.2)"
-                            : "0 1px 6px oklch(0.18 0.02 30 / 0.05)",
-                        }}
-                      >
-                        {isSelected && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ background: "oklch(0.55 0.18 250)" }}>
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                        <Store className="w-5 h-5 mb-2"
-                          style={{ color: isSelected ? "oklch(0.55 0.18 250)" : "oklch(0.65 0.02 60)" }} />
-                        <div className="text-sm font-medium leading-tight"
-                          style={{ color: isSelected ? "white" : "oklch(0.20 0.03 250)" }}>
-                          {restaurant.name}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Current Status */}
-      {todayOrders && todayOrders.length > 0 && (
-        <div className="mt-8 rounded-xl p-5" style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)" }}>
-          <h3 className="font-semibold mb-3" style={{ color: "oklch(0.20 0.03 250)" }}>
-            현재 신청 현황 ({todayOrders.length}명)
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {todayOrders.map(order => (
-              <div key={order.id} className="flex items-center gap-2 text-sm">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "oklch(0.65 0.15 145)" }} />
-                <span style={{ color: "oklch(0.35 0.02 30)" }}>{order.employeeNickname}</span>
-                <span className="text-xs truncate" style={{ color: "oklch(0.55 0.02 30)" }}>
-                  {order.restaurantName}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
