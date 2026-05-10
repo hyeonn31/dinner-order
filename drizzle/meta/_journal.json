@@ -1,5 +1,20 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1778401908902,
+      "tag": "0000_overrated_lily_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1778402049020,
+      "tag": "0001_salty_dragon_man",
+      "breakpoints": true
+    }
+  ]
 }
