@@ -1,0 +1,8 @@
+{
+  "query": "SELECT m.id, m.name, r.name as restaurant FROM menuItems m JOIN restaurants r ON m.restaurantId = r.id WHERE r.name IN ('맘스터치', '롯데리아', '프랭크버거') ORDER BY r.name, m.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT m.id, m.name, r.name as restaurant FROM menuItems m JOIN restaurants r ON m.restaurantId = r.id WHERE r.name IN ('맘스터치', '롯데리아', '프랭크버거') ORDER BY r.name, m.name;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'cqun8pedqtuohttdtuh4y8.menuItems' doesn't exist"
+  ]
+}
