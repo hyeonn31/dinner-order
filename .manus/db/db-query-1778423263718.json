@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60034 ORDER BY itemType, sortOrder LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60034 ORDER BY itemType, sortOrder LIMIT 20;",
+  "rows": [
+    {
+      "id": "60325",
+      "name": "로스트 닭다리살 샐러드",
+      "itemType": "main",
+      "restaurantId": "60034"
+    },
+    {
+      "id": "60326",
+      "name": "우삼겹 메밀면 누들볼",
+      "itemType": "main",
+      "restaurantId": "60034"
+    },
+    {
+      "id": "60327",
+      "name": "노릇두부 단호박 샐러드",
+      "itemType": "main",
+      "restaurantId": "60034"
+    },
+    {
+      "id": "60328",
+      "name": "탄단지 샐러드",
+      "itemType": "main",
+      "restaurantId": "60034"
+    },
+    {
+      "id": "60329",
+      "name": "그라브락스 연어 샐러드",
+      "itemType": "main",
+      "restaurantId": "60034"
+    },
+    {
+      "id": "60330",
+      "name": "(기본) 선택한 메뉴 기본볼",
+      "itemType": "main",
+      "restaurantId": "60034"
+    },
+    {
+      "id": "60331",
+      "name": "샐러드 채소볼->포케볼로 변경",
+      "itemType": "option",
+      "restaurantId": "60034"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titemType\trestaurantId\n60325\t로스트 닭다리살 샐러드\tmain\t60034\n60326\t우삼겹 메밀면 누들볼\tmain\t60034\n60327\t노릇두부 단호박 샐러드\tmain\t60034\n60328\t탄단지 샐러드\tmain\t60034\n60329\t그라브락스 연어 샐러드\tmain\t60034\n60330\t(기본) 선택한 메뉴 기본볼\tmain\t60034\n60331\t샐러드 채소볼->포케볼로 변경\toption\t60034\n",
+  "stderr": "",
+  "execution_time_ms": 1792
+}

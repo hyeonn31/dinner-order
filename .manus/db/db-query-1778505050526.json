@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, categoryId FROM restaurants WHERE name LIKE '%버거%' OR name LIKE '%테스트%' ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT id, name, categoryId FROM restaurants WHERE name LIKE '%버거%' OR name LIKE '%테스트%' ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "120011",
+      "name": "버거킹",
+      "categoryId": "4"
+    },
+    {
+      "id": "120010",
+      "name": "버거킹",
+      "categoryId": "4"
+    },
+    {
+      "id": "120009",
+      "name": "테스트 식당",
+      "categoryId": "1"
+    },
+    {
+      "id": "120008",
+      "name": "버거킹",
+      "categoryId": "4"
+    },
+    {
+      "id": "120007",
+      "name": "버거킹",
+      "categoryId": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcategoryId\n120011\t버거킹\t4\n120010\t버거킹\t4\n120009\t테스트 식당\t1\n120008\t버거킹\t4\n120007\t버거킹\t4\n",
+  "stderr": "",
+  "execution_time_ms": 1947
+}

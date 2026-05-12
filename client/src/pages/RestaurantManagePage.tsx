@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Loader2, Lock, Eye, EyeOff } from "lucide-react";
 import {
   AlertDialog,
@@ -20,6 +21,7 @@ import {
 const ADMIN_PASSWORD = "2101";
 
 export default function RestaurantManagePage() {
+  const queryClient = useQueryClient();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +38,10 @@ export default function RestaurantManagePage() {
   };
 
   const utils = trpc.useUtils();
-  const { data: restaurants, isLoading: restaurantsLoading } = trpc.restaurant.list.useQuery();
+  const { data: restaurants, isLoading: restaurantsLoading, refetch: refetchRestaurants } = trpc.restaurant.list.useQuery(undefined, {
+    staleTime: 0,
+    gcTime: 0,
+  });
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
   const [newRestaurantName, setNewRestaurantName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -61,18 +66,25 @@ export default function RestaurantManagePage() {
   ];
 
   const selectedRestaurant = restaurants?.find(r => r.id === selectedRestaurantId);
-  const { data: menus, isLoading: menusLoading } = trpc.restaurant.menus.useQuery(
+  const { data: menus, isLoading: menusLoading, refetch: refetchMenus } = trpc.restaurant.menus.useQuery(
     { restaurantId: selectedRestaurantId || 0 },
-    { enabled: !!selectedRestaurantId }
+    { 
+      enabled: !!selectedRestaurantId,
+      staleTime: 0,
+      gcTime: 0,
+    }
   );
 
   // 식당 추가
   const addRestaurantMutation = trpc.restaurant.addRestaurant.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("식당이 추가되었습니다");
       setNewRestaurantName("");
       setSelectedCategory("");
-      utils.restaurant.list.invalidate();
+      // 페이지 새로고침하여 최신 데이터 로드
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
     onError: (error) => {
       toast.error(`식당 추가 실패: ${error.message}`);
@@ -81,9 +93,12 @@ export default function RestaurantManagePage() {
 
   // 식당 삭제
   const deleteRestaurantMutation = trpc.restaurant.deleteRestaurant.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("식당이 삭제되었습니다");
-      utils.restaurant.list.invalidate();
+      // 페이지 새로고침하여 최신 데이터 로드
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
       setDeleteRestaurantId(null);
     },
     onError: (error) => {
@@ -93,11 +108,14 @@ export default function RestaurantManagePage() {
 
   // 메뉴 추가
   const addMenuMutation = trpc.restaurant.addMenu.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("메뉴가 추가되었습니다");
       setNewMenuName("");
       setSelectedMenuType("main");
-      utils.restaurant.menus.invalidate();
+      // 페이지 새로고침하여 최신 데이터 로드
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
     onError: (error) => {
       toast.error(`메뉴 추가 실패: ${error.message}`);
@@ -106,9 +124,12 @@ export default function RestaurantManagePage() {
 
   // 메뉴 삭제
   const deleteMenuMutation = trpc.restaurant.deleteMenu.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("메뉴가 삭제되었습니다");
-      utils.restaurant.menus.invalidate();
+      // 페이지 새로고침하여 최신 데이터 로드
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
       setDeleteMenuId(null);
     },
     onError: (error) => {
@@ -273,7 +294,9 @@ export default function RestaurantManagePage() {
                       <div
                         key={restaurant.id}
                         className="flex items-center justify-between p-3 bg-card border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition"
-                        onClick={() => setSelectedRestaurantId(restaurant.id)}
+                        onClick={() => {
+                          setSelectedRestaurantId(restaurant.id);
+                        }}
                       >
                         <div className="flex-1">
                           <p className="font-medium text-foreground">{restaurant.name}</p>
@@ -310,7 +333,10 @@ export default function RestaurantManagePage() {
                 <CardDescription>메뉴를 관리할 식당을 선택하세요</CardDescription>
               </CardHeader>
               <CardContent>
-                <Select value={selectedRestaurantId?.toString() || ""} onValueChange={(v) => setSelectedRestaurantId(parseInt(v))}>
+                <Select value={selectedRestaurantId?.toString() || ""} onValueChange={(v) => {
+                  const id = parseInt(v);
+                  setSelectedRestaurantId(id);
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="식당을 선택하세요" />
                   </SelectTrigger>

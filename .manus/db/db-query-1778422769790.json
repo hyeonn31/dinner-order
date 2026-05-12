@@ -1,0 +1,15 @@
+{
+  "query": "SELECT r.id, r.name, r.categoryId FROM restaurants r WHERE r.name LIKE '%버텍스%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT r.id, r.name, r.categoryId FROM restaurants r WHERE r.name LIKE '%버텍스%';",
+  "rows": [
+    {
+      "id": "60031",
+      "name": "버텍스",
+      "categoryId": "60011"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcategoryId\n60031\t버텍스\t60011\n",
+  "stderr": "",
+  "execution_time_ms": 1806
+}

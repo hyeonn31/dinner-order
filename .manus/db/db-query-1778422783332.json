@@ -1,0 +1,40 @@
+{
+  "query": "SELECT ds.id, ds.settingDate, ds.restaurantId, r.name as restaurantName FROM daily_settings ds JOIN restaurants r ON ds.restaurantId = r.id WHERE ds.isActive = 1 ORDER BY ds.settingDate DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT ds.id, ds.settingDate, ds.restaurantId, r.name as restaurantName FROM daily_settings ds JOIN restaurants r ON ds.restaurantId = r.id WHERE ds.isActive = 1 ORDER BY ds.settingDate DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "30014",
+      "settingDate": "2026-05-10",
+      "restaurantId": "60028",
+      "restaurantName": "본도시락"
+    },
+    {
+      "id": "30015",
+      "settingDate": "2026-05-10",
+      "restaurantId": "60031",
+      "restaurantName": "버텍스"
+    },
+    {
+      "id": "30016",
+      "settingDate": "2026-05-10",
+      "restaurantId": "60034",
+      "restaurantName": "샐러디"
+    },
+    {
+      "id": "30017",
+      "settingDate": "2026-05-10",
+      "restaurantId": "60038",
+      "restaurantName": "맘스터치"
+    },
+    {
+      "id": "30018",
+      "settingDate": "2026-05-10",
+      "restaurantId": "60039",
+      "restaurantName": "롯데리아"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsettingDate\trestaurantId\trestaurantName\n30014\t2026-05-10\t60028\t본도시락\n30015\t2026-05-10\t60031\t버텍스\n30016\t2026-05-10\t60034\t샐러디\n30017\t2026-05-10\t60038\t맘스터치\n30018\t2026-05-10\t60039\t롯데리아\n",
+  "stderr": "",
+  "execution_time_ms": 1863
+}

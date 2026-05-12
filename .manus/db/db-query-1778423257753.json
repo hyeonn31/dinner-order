@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60031 ORDER BY itemType, sortOrder LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60031 ORDER BY itemType, sortOrder LIMIT 20;",
+  "rows": [
+    {
+      "id": "60295",
+      "name": "미국식 닭고기 덮밥 S",
+      "itemType": "main",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60296",
+      "name": "미국식 닭고기 덮밥 M",
+      "itemType": "main",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60297",
+      "name": "미국식 닭고기 덮밥 L",
+      "itemType": "main",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60298",
+      "name": "미국식 새우 닭고기 덮밥 S",
+      "itemType": "main",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60299",
+      "name": "미국식 새우 닭고기 덮밥 M",
+      "itemType": "main",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60300",
+      "name": "버텍스 소스 (필수)",
+      "itemType": "option",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60301",
+      "name": "데리야끼",
+      "itemType": "option",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60302",
+      "name": "페퍼",
+      "itemType": "option",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60303",
+      "name": "염염",
+      "itemType": "option",
+      "restaurantId": "60031"
+    },
+    {
+      "id": "60304",
+      "name": "치폴레",
+      "itemType": "option",
+      "restaurantId": "60031"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titemType\trestaurantId\n60295\t미국식 닭고기 덮밥 S\tmain\t60031\n60296\t미국식 닭고기 덮밥 M\tmain\t60031\n60297\t미국식 닭고기 덮밥 L\tmain\t60031\n60298\t미국식 새우 닭고기 덮밥 S\tmain\t60031\n60299\t미국식 새우 닭고기 덮밥 M\tmain\t60031\n60300\t버텍스 소스 (필수)\toption\t60031\n60301\t데리야끼\toption\t60031\n60302\t페퍼\toption\t60031\n60303\t염염\toption\t60031\n60304\t치폴레\toption\t60031\n",
+  "stderr": "",
+  "execution_time_ms": 1862
+}

@@ -49,7 +49,7 @@ export default function OrderPage() {
   // 음료 기본값 설정 - 햄버거 제외 전부 제로콜라
   useEffect(() => {
     if (selectedRestaurantId && todayRestaurants) {
-      const restaurant = todayRestaurants.find(r => r.id === selectedRestaurantId);
+      const restaurant = todayRestaurants.find(r => r.restaurantId === selectedRestaurantId);
       if (restaurant && restaurant.categoryName !== "햄버거") {
         setDrinkOption("제로콜라");
       } else {
@@ -205,7 +205,7 @@ export default function OrderPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {todayRestaurants?.map((r) => (
-                      <SelectItem key={r.id} value={r.id.toString()}>
+                      <SelectItem key={r.restaurantId} value={r.restaurantId.toString()}>
                         {r.restaurantName}
                       </SelectItem>
                     ))}
@@ -245,7 +245,7 @@ export default function OrderPage() {
                           <SelectValue placeholder="사이드를 선택하세요" />
                         </SelectTrigger>
                         <SelectContent className="max-h-64">
-                          <SelectItem value="">선택 안함</SelectItem>
+                          <SelectItem value="none">선택 안함</SelectItem>
                           {sideMenus.map((m: any) => (
                             <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                           ))}
@@ -255,7 +255,7 @@ export default function OrderPage() {
                   )}
 
                   {/* 음료 */}
-                  {drinkMenus.length > 0 || todayRestaurants?.find(r => r.id === selectedRestaurantId)?.categoryName !== "햄버거" ? (
+                  {drinkMenus.length > 0 || todayRestaurants?.find(r => r.restaurantId === selectedRestaurantId)?.categoryName !== "햄버거" ? (
                     <div>
                       <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>음료</div>
                       <Select value={drinkOption} onValueChange={setDrinkOption}>
@@ -265,7 +265,7 @@ export default function OrderPage() {
                         <SelectContent className="max-h-64">
                           {drinkMenus.length > 0 ? (
                             <>
-                              <SelectItem value="">선택 안함</SelectItem>
+                              <SelectItem value="none">선택 안함</SelectItem>
                               {drinkMenus.map((m: any) => (
                                 <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                               ))}
@@ -289,7 +289,7 @@ export default function OrderPage() {
                           <SelectValue placeholder="추가 옵션을 선택하세요" />
                         </SelectTrigger>
                         <SelectContent className="max-h-64">
-                          <SelectItem value="">선택 안함</SelectItem>
+                          <SelectItem value="none">선택 안함</SelectItem>
                           {optionMenus.map((m: any) => (
                             <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                           ))}

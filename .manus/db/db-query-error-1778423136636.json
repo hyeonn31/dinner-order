@@ -1,0 +1,8 @@
+{
+  "query": "SELECT ds.id, ds.restaurantId, r.name as restaurant_name, r.categoryName FROM daily_settings ds JOIN restaurants r ON ds.restaurantId = r.id WHERE ds.settingDate = CURDATE() ORDER BY ds.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT ds.id, ds.restaurantId, r.name as restaurant_name, r.categoryName FROM daily_settings ds JOIN restaurants r ON ds.restaurantId = r.id WHERE ds.settingDate = CURDATE() ORDER BY ds.id;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'r.categoryname' in 'field list'"
+  ]
+}
