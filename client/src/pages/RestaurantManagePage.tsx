@@ -50,6 +50,7 @@ export default function RestaurantManagePage() {
     { id: 2, name: "양식" },
     { id: 3, name: "샐러드" },
     { id: 4, name: "햄버거" },
+    { id: 5, name: "일식" },
   ];
 
   const menuTypes = [

@@ -16,6 +16,7 @@ const categories = [
   { id: 2, name: "양식", sortOrder: 2 },
   { id: 3, name: "샐러드", sortOrder: 3 },
   { id: 4, name: "햄버거", sortOrder: 4 },
+  { id: 5, name: "일식", sortOrder: 5 },
 ];
 
 // ─── 식당 ───────────────────────────────────────────────────
@@ -126,7 +127,7 @@ const employees = [
   "Hicks","Isaac","Ryoo","Ben","Hank","Campbell","Arc","Eisen","Mark","Vivian",
   "Pabian","Kai","Brian","Howl","Luiz","Winter","Loey","Opal","Herta","Zain",
   "Beck","Kirk","Andy","Bourbon","Hia","Oliver","Doyle","Owen","Zen","Arthur",
-  "Sean","Cony","Holmes","Dani","Dylon",
+  "Sean","Cony","Holmes","Dani","Dylon","Flash",
 ];
 
 // ─── INSERT ───────────────────────────────────────────────────

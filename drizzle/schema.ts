@@ -27,7 +27,7 @@ export type InsertUser = typeof users.$inferInsert;
 // 식당 카테고리
 export const restaurantCategories = mysqlTable("restaurant_categories", {
   id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 50 }).notNull(), // 한식, 양식, 샐러드, 햄버거
+  name: varchar("name", { length: 50 }).notNull(), // 한식, 양식, 샐러드, 햄버거, 일식
   sortOrder: int("sortOrder").default(0).notNull(),
 });
 

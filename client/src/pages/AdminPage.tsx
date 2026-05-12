@@ -16,6 +16,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
   "양식": { bg: "oklch(0.95 0.04 220)", text: "oklch(0.35 0.10 220)", border: "oklch(0.75 0.08 220)" },
   "샐러드": { bg: "oklch(0.95 0.05 145)", text: "oklch(0.38 0.12 145)", border: "oklch(0.75 0.10 145)" },
   "햄버거": { bg: "oklch(0.95 0.05 60)", text: "oklch(0.42 0.12 60)", border: "oklch(0.78 0.10 60)" },
+  "일식": { bg: "oklch(0.95 0.04 200)", text: "oklch(0.36 0.10 200)", border: "oklch(0.76 0.09 200)" },
 };
 
 const ADMIN_PASSWORD = "2101";

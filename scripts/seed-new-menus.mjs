@@ -13,7 +13,7 @@ try {
   console.log('기존 데이터 삭제 완료');
 
   // 카테고리 추가
-  const categories = ['한식', '양식', '샐러드', '햄버거'];
+  const categories = ['한식', '양식', '샐러드', '햄버거', '일식'];
   const categoryMap = {};
   
   for (let i = 0; i < categories.length; i++) {
