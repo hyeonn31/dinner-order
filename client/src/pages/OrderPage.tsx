@@ -58,6 +58,13 @@ export default function OrderPage() {
     }
   }, [selectedRestaurantId, todayRestaurants]);
 
+  // 식당 변경 시 이전 식당의 메뉴 선택값 초기화
+  useEffect(() => {
+    setMainMenu("");
+    setSideMenu("");
+    setExtraOption("");
+  }, [selectedRestaurantId]);
+
   const submitMutation = trpc.order.submit.useMutation({
     onSuccess: () => {
       toast.success("신청이 완료되었습니다");
@@ -105,6 +112,7 @@ export default function OrderPage() {
   const sideMenus = menus?.filter((m: any) => m.itemType === "side") ?? [];
   const drinkMenus = menus?.filter((m: any) => m.itemType === "drink") ?? [];
   const optionMenus = menus?.filter((m: any) => m.itemType === "option" || m.itemType === "extra") ?? [];
+  const selectableMainMenus = mainMenus.length > 0 ? mainMenus : (menus ?? []);
 
   const filteredEmployees = useMemo(() => {
     if (!employees) return [];
@@ -229,7 +237,7 @@ export default function OrderPage() {
                         <SelectValue placeholder="메인메뉴를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent className="max-h-64">
-                        {mainMenus.map((m: any) => (
+                        {selectableMainMenus.map((m: any) => (
                           <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
                         ))}
                       </SelectContent>
