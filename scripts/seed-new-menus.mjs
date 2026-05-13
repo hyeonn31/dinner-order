@@ -181,7 +181,17 @@ try {
         {
           name: '단백하루',
           menus: [
-            { name: '샐러디 베이스변경 채소볼<->곡물볼', type: 'option' }
+            { name: '비건 샐러드(채식)', type: 'main' },
+            { name: '닭가슴살 스테이크 샐러드 (단백질 39.7g)', type: 'main' },
+            { name: '돼지안심 스테이크 샐러드 (단백질 36.5g)', type: 'main' },
+            { name: '닭다리살 스테이크 샐러드 (단백질 39.7g)', type: 'main' },
+            { name: '닭가슴살 스테이크 포케 (단백질 46.2g)', type: 'main' },
+            { name: '돼지안심 스테이크 포케 (단백질 43g)', type: 'main' },
+            { name: '닭다리살 스테이크 포케 (단백질 48g)', type: 'main' },
+            
+            
+
+
           ]
         }
       ]
