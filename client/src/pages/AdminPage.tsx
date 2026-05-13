@@ -88,6 +88,7 @@ function AdminContent() {
   useEffect(() => {
     if (todaySettings) {
       setSelected(new Set(todaySettings.map(s => s.restaurantId)));
+      setIsClosed(todaySettings[0]?.isClosed || false);
     }
   }, [todaySettings]);
 
@@ -233,6 +234,17 @@ function AdminContent() {
           >
             {toggleClosedMutation.isPending ? (isClosed ? "오픈 중..." : "마감 중...") : (isClosed ? "오픈" : "마감")}
           </Button>
+
+          {isClosed && (
+            <Button
+              onClick={handleToggleClosed}
+              disabled={toggleClosedMutation.isPending}
+              variant="outline"
+              className="flex-1 min-w-[120px] border-green-600 text-green-700 hover:bg-green-50"
+            >
+              {toggleClosedMutation.isPending ? "마감 해제 중..." : "마감 해제"}
+            </Button>
+          )}
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
