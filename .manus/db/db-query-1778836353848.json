@@ -1,0 +1,130 @@
+{
+  "query": "SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60033 AND itemType = 'main' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60033 AND itemType = 'main' LIMIT 20;",
+  "rows": [
+    {
+      "id": "60313",
+      "name": "미태리 치즈피자",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60314",
+      "name": "미태리 고르곤졸라 피자",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60315",
+      "name": "미태리 페퍼로니 피자",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60316",
+      "name": "베이컨 토마토 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60317",
+      "name": "베이컨 크림 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60318",
+      "name": "해물 토마토 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60319",
+      "name": "해물 짬뽕 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60320",
+      "name": "로제 크림 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60321",
+      "name": "이태리 전통 빠네",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60322",
+      "name": "매운맛 빠네",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60323",
+      "name": "로제 맵제 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "60324",
+      "name": "매운 크림 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90004",
+      "name": "양송이 크림 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90005",
+      "name": "감바스 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90006",
+      "name": "토마토 치즈 리조또",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90007",
+      "name": "크림 치즈 리조또",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90008",
+      "name": "알리오 올리오",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90009",
+      "name": "봉골레 파스타",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90010",
+      "name": "킹 소시지 김치 볶음밥",
+      "itemType": "main",
+      "restaurantId": "60033"
+    },
+    {
+      "id": "90011",
+      "name": "소불고기 필라프",
+      "itemType": "main",
+      "restaurantId": "60033"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titemType\trestaurantId\n60313\t미태리 치즈피자\tmain\t60033\n60314\t미태리 고르곤졸라 피자\tmain\t60033\n60315\t미태리 페퍼로니 피자\tmain\t60033\n60316\t베이컨 토마토 파스타\tmain\t60033\n60317\t베이컨 크림 파스타\tmain\t60033\n60318\t해물 토마토 파스타\tmain\t60033\n60319\t해물 짬뽕 파스타\tmain\t60033\n60320\t로제 크림 파스타\tmain\t60033\n60321\t이태리 전통 빠네\tmain\t60033\n60322\t매운맛 빠네\tmain\t60033\n60323\t로제 맵제 파스타\tmain\t60033\n60324\t매운 크림 파스타\tmain\t60033\n90004\t양송이 크림 파스타\tmain\t60033\n90005\t감바스 파스타\tmain\t60033\n90006\t토마토 치즈 리조또\tmain\t60033\n90007\t크림 치즈 리조또\tmain\t60033\n90008\t알리오 올리오\tmain\t60033\n90009\t봉골레 파스타\tmain\t60033\n90010\t킹 소시지 김치 볶음밥\tmain\t60033\n90011\t소불고기 필라프\tmain\t60033\n",
+  "stderr": "",
+  "execution_time_ms": 1849
+}

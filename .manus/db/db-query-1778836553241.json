@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO menu_items (restaurantId, name, itemType, sortOrder) VALUES \n(60037, '그린 샐러드', 'main', 1),\n(60037, '그릭 샐러드', 'main', 2),\n(60037, '시저 샐러드', 'main', 3),\n(60037, '스테이크 샐러드', 'main', 4),\n(60037, '새우 샐러드', 'main', 5);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute INSERT INTO menu_items (restaurantId, name, itemType, sortOrder) VALUES \n(60037, '그린 샐러드', 'main', 1),\n(60037, '그릭 샐러드', 'main', 2),\n(60037, '시저 샐러드', 'main', 3),\n(60037, '스테이크 샐러드', 'main', 4),\n(60037, '새우 샐러드', 'main', 5);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1962
+}

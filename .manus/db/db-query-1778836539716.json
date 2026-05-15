@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60037 LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT id, name, itemType, restaurantId FROM menu_items WHERE restaurantId = 60037 LIMIT 20;",
+  "rows": [
+    {
+      "id": "60359",
+      "name": "샐러디 베이스변경 채소볼<->곡물볼",
+      "itemType": "option",
+      "restaurantId": "60037"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titemType\trestaurantId\n60359\t샐러디 베이스변경 채소볼<->곡물볼\toption\t60037\n",
+  "stderr": "",
+  "execution_time_ms": 1861
+}

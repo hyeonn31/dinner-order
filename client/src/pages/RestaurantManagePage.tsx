@@ -77,14 +77,14 @@ export default function RestaurantManagePage() {
 
   // 식당 추가
   const addRestaurantMutation = trpc.restaurant.addRestaurant.useMutation({
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("식당이 추가되었습니다");
       setNewRestaurantName("");
       setSelectedCategory("");
-      // 페이지 새로고침하여 최신 데이터 로드
+      // 약간의 지연 후 refetch 호출
       setTimeout(() => {
-        window.location.reload();
-      }, 500);
+        refetchRestaurants();
+      }, 300);
     },
     onError: (error) => {
       toast.error(`식당 추가 실패: ${error.message}`);
@@ -93,12 +93,12 @@ export default function RestaurantManagePage() {
 
   // 식당 삭제
   const deleteRestaurantMutation = trpc.restaurant.deleteRestaurant.useMutation({
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("식당이 삭제되었습니다");
-      // 페이지 새로고침하여 최신 데이터 로드
+      // 약간의 지연 후 refetch 호출
       setTimeout(() => {
-        window.location.reload();
-      }, 500);
+        refetchRestaurants();
+      }, 300);
       setDeleteRestaurantId(null);
     },
     onError: (error) => {
@@ -108,14 +108,14 @@ export default function RestaurantManagePage() {
 
   // 메뉴 추가
   const addMenuMutation = trpc.restaurant.addMenu.useMutation({
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("메뉴가 추가되었습니다");
       setNewMenuName("");
       setSelectedMenuType("main");
-      // 페이지 새로고침하여 최신 데이터 로드
+      // 약간의 지연 후 refetch 호출
       setTimeout(() => {
-        window.location.reload();
-      }, 500);
+        refetchMenus();
+      }, 300);
     },
     onError: (error) => {
       toast.error(`메뉴 추가 실패: ${error.message}`);
@@ -124,12 +124,12 @@ export default function RestaurantManagePage() {
 
   // 메뉴 삭제
   const deleteMenuMutation = trpc.restaurant.deleteMenu.useMutation({
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("메뉴가 삭제되었습니다");
-      // 페이지 새로고침하여 최신 데이터 로드
+      // 약간의 지연 후 refetch 호출
       setTimeout(() => {
-        window.location.reload();
-      }, 500);
+        refetchMenus();
+      }, 300);
       setDeleteMenuId(null);
     },
     onError: (error) => {
