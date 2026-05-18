@@ -129,7 +129,7 @@ export default function SummaryPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
         <StatCard
           label="총 신청 인원"
           value={orders?.length ?? 0}
@@ -153,6 +153,12 @@ export default function SummaryPage() {
           value={orders?.length ?? 0}
           unit="가지"
           color="oklch(0.42 0.12 145)"
+        />
+        <StatCard
+          label="제로콜라"
+          value={orders?.filter(o => o.drinkOption === "제로콜라").length ?? 0}
+          unit="개"
+          color="oklch(0.35 0.15 280)"
         />
       </div>
 
