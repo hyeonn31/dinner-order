@@ -29,19 +29,39 @@ export default function SummaryPage() {
 
   // 복사용 텍스트 생성
   const generateCopyText = () => {
-    if (!summary || summary.length === 0) return "신청 내역이 없습니다.";
+    if (!orders || orders.length === 0) return "신청 내역이 없습니다.";
     const today = new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
     const lines: string[] = [`📋 저녁식사 주문 취합 (${today})`, ""];
 
-    for (const group of summary) {
-      lines.push(`▶ ${group.restaurant}`);
-      for (const item of group.items) {
-        lines.push(`  • ${item.menu} × ${item.count}`);
+    // 식당별로 그룹화
+    const groupedByRestaurant = new Map<string, { items: string[], zeroCokCount: number }>();
+    for (const order of orders) {
+      const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
+      let menuParts = [order.mainMenuName];
+      if (isHamburger && order.sideMenuName) menuParts.push(order.sideMenuName);
+      if (order.drinkOption) menuParts.push(order.drinkOption);
+      if (order.extraOption) menuParts.push(order.extraOption);
+      const fullMenu = menuParts.filter(Boolean).join(" + ") || "-";
+
+      if (!groupedByRestaurant.has(order.restaurantName)) {
+        groupedByRestaurant.set(order.restaurantName, { items: [], zeroCokCount: 0 });
       }
-      lines.push("");
+      const group = groupedByRestaurant.get(order.restaurantName)!;
+      group.items.push(fullMenu);
+      if (order.drinkOption === "제로콜라") {
+        group.zeroCokCount++;
+      }
     }
 
-    lines.push(`총 신청 인원: ${orders?.length ?? 0}명`);
+    groupedByRestaurant.forEach((group, restaurant) => {
+      lines.push(`▶ ${restaurant} (제로콜라 ${group.zeroCokCount}개)`);
+      for (const item of group.items) {
+        lines.push(`  • ${item}`);
+      }
+      lines.push("");
+    });
+
+    lines.push(`총 신청 인원: ${orders.length}명`);
     return lines.join("\n");
   };
 
@@ -52,10 +72,10 @@ export default function SummaryPage() {
     }).catch(() => toast.error("복사에 실패했습니다."));
   };
 
-  const handleCopyRestaurant = (restaurantName: string, items: { menu: string; count: number }[]) => {
-    const lines = [`▶ ${restaurantName}`];
+  const handleCopyRestaurant = (restaurantName: string, items: string[], zeroCokCount: number) => {
+    const lines = [`▶ ${restaurantName} (제로콜라 ${zeroCokCount}개)`];
     for (const item of items) {
-      lines.push(`  • ${item.menu} × ${item.count}`);
+      lines.push(`  • ${item}`);
     }
     navigator.clipboard.writeText(lines.join("\n")).then(() => {
       toast.success(`${restaurantName} 주문이 복사되었습니다!`);
@@ -66,6 +86,17 @@ export default function SummaryPage() {
 
   // 미신청 직원 목록 (신청한 직원 ID 기준)
   const orderedEmployeeIds = new Set(orders?.map(o => o.employeeId) ?? []);
+
+  // 식당별로 주문 그룹화
+  const groupedByRestaurant = new Map<string, typeof orders>();
+  if (orders) {
+    for (const order of orders) {
+      if (!groupedByRestaurant.has(order.restaurantName)) {
+        groupedByRestaurant.set(order.restaurantName, []);
+      }
+      groupedByRestaurant.get(order.restaurantName)!.push(order);
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -87,7 +118,7 @@ export default function SummaryPage() {
           <Button
             size="sm"
             onClick={handleCopyAll}
-            disabled={!summary || summary.length === 0}
+            disabled={!orders || orders.length === 0}
             className="gap-2"
             style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}
           >
@@ -113,13 +144,13 @@ export default function SummaryPage() {
         />
         <StatCard
           label="식당별 주문"
-          value={summary?.length ?? 0}
+          value={groupedByRestaurant.size}
           unit="건"
           color="oklch(0.38 0.10 220)"
         />
         <StatCard
           label="메뉴 종류"
-          value={summary?.reduce((acc, g) => acc + g.items.length, 0) ?? 0}
+          value={orders?.length ?? 0}
           unit="가지"
           color="oklch(0.42 0.12 145)"
         />
@@ -132,25 +163,35 @@ export default function SummaryPage() {
           <TabsTrigger value="text">복사용 텍스트</TabsTrigger>
         </TabsList>
 
-        {/* 주문 취합 탭 */}
+        {/* 주문 취합 탭 - 식당별 그룹화 */}
         <TabsContent value="summary">
-          {summaryLoading ? (
+          {ordersLoading ? (
             <LoadingState />
-          ) : !summary || summary.length === 0 ? (
+          ) : !orders || orders.length === 0 ? (
             <EmptyState message="아직 신청 내역이 없습니다." />
           ) : (
             <div className="space-y-4">
-              {summary.map(group => {
-                const isExpanded = expandedRestaurants.has(group.restaurant);
-                const totalCount = group.items.reduce((acc, i) => acc + i.count, 0);
+              {Array.from(groupedByRestaurant.entries()).map(([restaurant, restaurantOrders]) => {
+                const isExpanded = expandedRestaurants.has(restaurant);
+                const totalCount = restaurantOrders?.length ?? 0;
+                const zeroCokCount = (restaurantOrders ?? []).filter(o => o.drinkOption === "제로콜라").length;
+                const items = (restaurantOrders ?? []).map(order => {
+                  const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
+                  let menuParts = [order.mainMenuName];
+                  if (isHamburger && order.sideMenuName) menuParts.push(order.sideMenuName);
+                  if (order.drinkOption) menuParts.push(order.drinkOption);
+                  if (order.extraOption) menuParts.push(order.extraOption);
+                  return menuParts.filter(Boolean).join(" + ") || "-";
+                });
+
                 return (
-                  <div key={group.restaurant} className="rounded-2xl overflow-hidden"
+                  <div key={restaurant} className="rounded-2xl overflow-hidden"
                     style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)", boxShadow: "0 2px 12px oklch(0.18 0.02 30 / 0.05)" }}>
                     {/* Restaurant Header */}
                     <div
                       className="flex items-center justify-between p-5 cursor-pointer"
                       style={{ borderBottom: isExpanded ? "1px solid oklch(0.92 0.01 60)" : "none" }}
-                      onClick={() => toggleExpand(group.restaurant)}
+                      onClick={() => toggleExpand(restaurant)}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -161,10 +202,10 @@ export default function SummaryPage() {
                         </div>
                         <div>
                           <div className="font-semibold" style={{ color: "oklch(0.20 0.03 250)" }}>
-                            {group.restaurant}
+                            {restaurant}
                           </div>
                           <div className="text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
-                            {group.items.length}가지 메뉴 · {totalCount}명
+                            {totalCount}명 · 제로콜라 {zeroCokCount}개
                           </div>
                         </div>
                       </div>
@@ -173,7 +214,7 @@ export default function SummaryPage() {
                           variant="outline"
                           size="sm"
                           className="gap-1.5 text-xs h-8"
-                          onClick={e => { e.stopPropagation(); handleCopyRestaurant(group.restaurant, group.items); }}
+                          onClick={e => { e.stopPropagation(); handleCopyRestaurant(restaurant, items, zeroCokCount); }}
                         >
                           <Copy className="w-3 h-3" />
                           복사
@@ -188,15 +229,11 @@ export default function SummaryPage() {
                     {/* Menu Items */}
                     {isExpanded && (
                       <div className="p-5 space-y-2">
-                        {group.items.map(item => (
-                          <div key={item.menu} className="flex items-center justify-between py-2 px-3 rounded-lg"
+                        {items.map((item, idx) => (
+                          <div key={idx} className="flex items-center justify-between py-2 px-3 rounded-lg"
                             style={{ background: "oklch(0.97 0.005 60)" }}>
                             <span className="text-sm" style={{ color: "oklch(0.25 0.02 30)" }}>
-                              {item.menu}
-                            </span>
-                            <span className="font-bold text-sm px-2.5 py-0.5 rounded-full"
-                              style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}>
-                              × {item.count}
+                              {item}
                             </span>
                           </div>
                         ))}
@@ -238,19 +275,30 @@ export default function SummaryPage() {
                         {order.restaurantName}
                       </td>
                       <td className="px-4 py-3" style={{ color: "oklch(0.35 0.02 30)" }}>
-                        {/* 햄버거 + 사이드 조합 표시 */}
-                        {order.sideMenuName && (order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크'))
-                          ? `${order.mainMenuName} + ${order.sideMenuName}`
-                          : order.mainMenuName || "-"}
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
                         {(() => {
                           const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
-                          const extras = isHamburger
-                            ? [order.drinkOption, order.extraOption].filter(Boolean)
-                            : [order.drinkOption, order.extraOption].filter(Boolean);
-                          return extras.join(" / ") || "-";
+                          let menuParts = [order.mainMenuName];
+                          
+                          // 햄버거의 경우 사이드 추가
+                          if (isHamburger && order.sideMenuName) {
+                            menuParts.push(order.sideMenuName);
+                          }
+                          
+                          // 음료 추가
+                          if (order.drinkOption) {
+                            menuParts.push(order.drinkOption);
+                          }
+                          
+                          // 추가옵션 추가
+                          if (order.extraOption) {
+                            menuParts.push(order.extraOption);
+                          }
+                          
+                          return menuParts.filter(Boolean).join(" + ") || "-";
                         })()}
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
+                        -
                       </td>
                     </tr>
                   ))}
@@ -262,61 +310,71 @@ export default function SummaryPage() {
 
         {/* 복사용 텍스트 탭 */}
         <TabsContent value="text">
-          <div className="rounded-2xl overflow-hidden"
-            style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)", boxShadow: "0 2px 12px oklch(0.18 0.02 30 / 0.05)" }}>
-            <div className="flex items-center justify-between px-5 py-4"
-              style={{ borderBottom: "1px solid oklch(0.92 0.01 60)", background: "oklch(0.97 0.005 60)" }}>
-              <span className="text-sm font-semibold" style={{ color: "oklch(0.35 0.02 30)" }}>
-                메신저 붙여넣기용 텍스트
-              </span>
-              <Button
-                size="sm"
-                onClick={handleCopyAll}
-                disabled={!summary || summary.length === 0}
-                className="gap-2"
-                style={{ background: "oklch(0.35 0.08 250)", color: "oklch(0.85 0.15 250)" }}
-              >
-                <Copy className="w-4 h-4" />
-                복사
-              </Button>
+          {ordersLoading ? (
+            <LoadingState />
+          ) : (
+            <div className="rounded-2xl p-6" style={{ background: "oklch(0.97 0.005 60)" }}>
+              <pre className="text-xs whitespace-pre-wrap break-words font-mono" style={{ color: "oklch(0.35 0.02 30)" }}>
+                {generateCopyText()}
+              </pre>
             </div>
-            <pre className="p-5 text-sm whitespace-pre-wrap font-mono leading-relaxed"
-              style={{ color: "oklch(0.25 0.02 30)", background: "white", minHeight: "200px" }}>
-              {generateCopyText()}
-            </pre>
-          </div>
+          )}
         </TabsContent>
       </Tabs>
+
+      {/* 미신청 직원 */}
+      {todayRestaurants && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-4" style={{ color: "oklch(0.20 0.03 250)" }}>
+            미신청 직원
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Placeholder for not-ordered employees */}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+// Helper Components
 function StatCard({ label, value, unit, color }: { label: string; value: number; unit: string; color: string }) {
   return (
     <div className="rounded-xl p-4" style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)" }}>
-      <div className="text-2xl font-bold mb-1" style={{ color }}>
-        {value}<span className="text-sm font-normal ml-1" style={{ color: "oklch(0.55 0.02 30)" }}>{unit}</span>
+      <div className="text-xs font-medium mb-2" style={{ color: "oklch(0.55 0.02 30)" }}>
+        {label}
       </div>
-      <div className="text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>{label}</div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-2xl font-bold" style={{ color }}>
+          {value}
+        </span>
+        <span className="text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
+          {unit}
+        </span>
+      </div>
     </div>
   );
 }
 
 function LoadingState() {
   return (
-    <div className="text-center py-12" style={{ color: "oklch(0.55 0.02 30)" }}>
-      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-      불러오는 중...
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <div className="w-8 h-8 rounded-full border-2 border-transparent mx-auto mb-4"
+          style={{ borderTopColor: "oklch(0.35 0.08 250)", animation: "spin 1s linear infinite" }} />
+        <p style={{ color: "oklch(0.55 0.02 30)" }}>로딩 중...</p>
+      </div>
     </div>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="text-center py-16 rounded-2xl"
-      style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)" }}>
-      <Users className="w-10 h-10 mx-auto mb-3" style={{ color: "oklch(0.75 0.02 60)" }} />
-      <div className="text-sm" style={{ color: "oklch(0.55 0.02 30)" }}>{message}</div>
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <Users className="w-12 h-12 mx-auto mb-3" style={{ color: "oklch(0.70 0.05 250)" }} />
+        <p style={{ color: "oklch(0.55 0.02 30)" }}>{message}</p>
+      </div>
     </div>
   );
 }

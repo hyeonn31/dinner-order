@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, employeeId, restaurantName, mainMenuName, sideMenuName, drinkOption, extraOption FROM orders WHERE date = CURDATE() ORDER BY restaurantName, employeeId LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT id, employeeId, restaurantName, mainMenuName, sideMenuName, drinkOption, extraOption FROM orders WHERE date = CURDATE() ORDER BY restaurantName, employeeId LIMIT 20",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'date' in 'where clause'"
+  ]
+}

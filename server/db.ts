@@ -236,21 +236,27 @@ export async function getOrderSummary(today: string) {
     if (!summaryMap.has(restName)) summaryMap.set(restName, new Map());
     const menuMap = summaryMap.get(restName)!;
 
-    const mainKey = order.mainMenuName || "메뉴 미선택";
-    menuMap.set(mainKey, (menuMap.get(mainKey) || 0) + 1);
-
-    if (order.sideMenuName) {
-      const sideKey = `[사이드] ${order.sideMenuName}`;
-      menuMap.set(sideKey, (menuMap.get(sideKey) || 0) + 1);
+    // 한 명의 주문을 하나의 키로 생성 (메인메뉴 + 사이드 + 음료 + 추가옵션 조합)
+    const menuParts = [order.mainMenuName || "메뉴 미선택"];
+    
+    // 햄버거의 경우 사이드 추가
+    const isHamburger = restName.includes('맘스터치') || restName.includes('롯데리아') || restName.includes('프랭크');
+    if (isHamburger && order.sideMenuName) {
+      menuParts.push(order.sideMenuName);
     }
+    
+    // 음료 추가
     if (order.drinkOption) {
-      const drinkKey = `[음료] ${order.drinkOption}`;
-      menuMap.set(drinkKey, (menuMap.get(drinkKey) || 0) + 1);
+      menuParts.push(order.drinkOption);
     }
+    
+    // 추가옵션 추가
     if (order.extraOption) {
-      const extraKey = `[추가옵션] ${order.extraOption}`;
-      menuMap.set(extraKey, (menuMap.get(extraKey) || 0) + 1);
+      menuParts.push(order.extraOption);
     }
+    
+    const combinedKey = menuParts.join(" + ");
+    menuMap.set(combinedKey, (menuMap.get(combinedKey) || 0) + 1);
   }
 
   return Array.from(summaryMap.entries()).map(([restaurant, menus]) => ({
