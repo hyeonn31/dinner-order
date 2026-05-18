@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Search, Lock } from "lucide-react";
@@ -8,6 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const DRINK_OPTIONS = ["선택 안함", "제로콜라", "펩시제로", "사이다제로", "콜라", "사이다"];
 
@@ -26,6 +35,9 @@ export default function OrderPage() {
   const [submitted, setSubmitted] = useState(false);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
   const [isClosed, setIsClosed] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [existingOrder, setExistingOrder] = useState<any>(null);
+  const [pendingSubmit, setPendingSubmit] = useState<any>(null);
 
   const { data: menus } = trpc.restaurant.menus.useQuery(
     { restaurantId: selectedRestaurantId! },
@@ -66,8 +78,12 @@ export default function OrderPage() {
   }, [selectedRestaurantId]);
 
   const submitMutation = trpc.order.submit.useMutation({
-    onSuccess: () => {
-      toast.success("신청이 완료되었습니다");
+    onSuccess: (data: any) => {
+      if (data.isUpdate && data.oldMenu && data.newMenu) {
+        toast.success(`주문이 수정되었습니다: ${data.oldMenu} → ${data.newMenu}`);
+      } else {
+        toast.success("신청이 완료되었습니다");
+      }
       setSubmitted(true);
       setTimeout(() => {
         setSelectedEmployeeId(null);
@@ -87,7 +103,7 @@ export default function OrderPage() {
     },
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isClosed) {
       toast.error("신청이 마감되었습니다");
       return;
@@ -96,16 +112,38 @@ export default function OrderPage() {
     if (!selectedRestaurantId) return toast.error("식당을 선택해 주세요.");
     if (!mainMenu) return toast.error("메인 메뉴를 선택해 주세요.");
 
-    const normalizeOption = (v: string) => (!v || v === "none" || v === "선택 안함") ? undefined : v;
-    submitMutation.mutate({
-      employeeId: selectedEmployeeId,
-      restaurantId: selectedRestaurantId,
-      mainMenuName: mainMenu,
-      sideMenuName: normalizeOption(sideMenu),
-      drinkOption: normalizeOption(drinkOption),
-      extraOption: normalizeOption(extraOption),
-      note: note || undefined,
-    });
+    try {
+      // 기존 주문 확인
+      const existing = await utils.order.check.fetch({ employeeId: selectedEmployeeId });
+      if (existing) {
+        setExistingOrder(existing);
+        const normalizeOption = (v: string) => (!v || v === "none" || v === "선택 안함") ? undefined : v;
+        setPendingSubmit({
+          employeeId: selectedEmployeeId,
+          restaurantId: selectedRestaurantId,
+          mainMenuName: mainMenu,
+          sideMenuName: normalizeOption(sideMenu),
+          drinkOption: normalizeOption(drinkOption),
+          extraOption: normalizeOption(extraOption),
+          note: note || undefined,
+        });
+        setShowDuplicateDialog(true);
+        return;
+      }
+
+      const normalizeOption = (v: string) => (!v || v === "none" || v === "선택 안함") ? undefined : v;
+      submitMutation.mutate({
+        employeeId: selectedEmployeeId,
+        restaurantId: selectedRestaurantId,
+        mainMenuName: mainMenu,
+        sideMenuName: normalizeOption(sideMenu),
+        drinkOption: normalizeOption(drinkOption),
+        extraOption: normalizeOption(extraOption),
+        note: note || undefined,
+      });
+    } catch (error: any) {
+      toast.error(error.message || "기존 주문 확인 중 오류가 발생했습니다");
+    }
   };
 
   const mainMenus = menus?.filter((m: any) => m.itemType === "main") ?? [];
@@ -352,6 +390,45 @@ export default function OrderPage() {
           </div>
         </>
       )}
+
+      {/* 중복 신청 확인 대화 */}
+      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>이미 저녁식사를 신청했습니다</AlertDialogTitle>
+            <AlertDialogDescription>
+              {existingOrder && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm">
+                    <span className="font-semibold">기존 주문:</span> {existingOrder.mainMenuName}
+                    {existingOrder.sideMenuName && ` + ${existingOrder.sideMenuName}`}
+                    {existingOrder.drinkOption && ` + ${existingOrder.drinkOption}`}
+                    {existingOrder.extraOption && ` + ${existingOrder.extraOption}`}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-semibold">식당:</span> {existingOrder.restaurantName}
+                  </p>
+                  <p className="text-sm mt-4">변경하시겠습니까?</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingSubmit) {
+                  submitMutation.mutate(pendingSubmit);
+                  setShowDuplicateDialog(false);
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              변경하기
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

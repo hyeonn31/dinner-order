@@ -14,6 +14,7 @@ import {
   setTodayRestaurants,
   getTodayOrders,
   getOrderByEmployee,
+  getOrderByEmployeeWithRestaurant,
   upsertOrder,
   deleteOrder,
   resetTodayData,
@@ -165,6 +166,13 @@ export const appRouter = router({
         const today = getToday();
         return await getOrderByEmployee(today, input.employeeId);
       }),
+    check: publicProcedure
+      .input(z.object({ employeeId: z.number() }))
+      .query(async ({ input }) => {
+        const today = getToday();
+        const existing = await getOrderByEmployeeWithRestaurant(today, input.employeeId);
+        return existing;
+      }),
     submit: publicProcedure
       .input(z.object({
         employeeId: z.number(),
@@ -177,8 +185,8 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const today = getToday();
-        await upsertOrder({ today, ...input });
-        return { success: true };
+        const result = await upsertOrder({ today, ...input });
+        return { success: true, ...result };
       }),
     cancel: publicProcedure
       .input(z.object({ employeeId: z.number() }))

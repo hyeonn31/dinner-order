@@ -62,6 +62,19 @@ export default function SummaryPage() {
     });
 
     lines.push(`총 신청 인원: ${orders.length}명`);
+    
+    // 수정 사항이 있는 경우 표시
+    const updatedOrders = orders.filter(o => (o as any).isUpdated);
+    if (updatedOrders.length > 0) {
+      lines.push("");
+      lines.push("[수정 사항]");
+      for (const order of updatedOrders) {
+        const oldMenu = (order as any).oldMenu || "알 수 없음";
+        const newMenu = (order as any).newMenu || "알 수 없음";
+        lines.push(`  • ${order.employeeNickname}: ${oldMenu} → ${newMenu}`);
+      }
+    }
+    
     return lines.join("\n");
   };
 

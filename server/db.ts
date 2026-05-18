@@ -175,6 +175,25 @@ export async function getOrderByEmployee(today: string, employeeId: number) {
   return result.length > 0 ? result[0] : null;
 }
 
+export async function getOrderByEmployeeWithRestaurant(today: string, employeeId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({
+      id: orders.id,
+      mainMenuName: orders.mainMenuName,
+      sideMenuName: orders.sideMenuName,
+      drinkOption: orders.drinkOption,
+      extraOption: orders.extraOption,
+      restaurantName: restaurants.name,
+    })
+    .from(orders)
+    .innerJoin(restaurants, eq(orders.restaurantId, restaurants.id))
+    .where(and(sql`DATE(${orders.orderDate}) = ${today}`, eq(orders.employeeId, employeeId)))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
 export async function upsertOrder(data: {
   today: string;
   employeeId: number;
@@ -186,9 +205,23 @@ export async function upsertOrder(data: {
   note?: string;
 }) {
   const db = await getDb();
-  if (!db) return;
+  if (!db) return { isUpdate: false, oldMenu: null, newMenu: null };
   const existing = await getOrderByEmployee(data.today, data.employeeId);
   if (existing) {
+    // 기존 메뉴 저장
+    const oldMenuParts = [existing.mainMenuName || "메뉴 미선택"];
+    if (existing.sideMenuName) oldMenuParts.push(existing.sideMenuName);
+    if (existing.drinkOption) oldMenuParts.push(existing.drinkOption);
+    if (existing.extraOption) oldMenuParts.push(existing.extraOption);
+    const oldMenu = oldMenuParts.join(" + ");
+
+    // 새 메뉴 생성
+    const newMenuParts = [data.mainMenuName || "메뉴 미선택"];
+    if (data.sideMenuName) newMenuParts.push(data.sideMenuName);
+    if (data.drinkOption) newMenuParts.push(data.drinkOption);
+    if (data.extraOption) newMenuParts.push(data.extraOption);
+    const newMenu = newMenuParts.join(" + ");
+
     await db.update(orders).set({
       restaurantId: data.restaurantId,
       mainMenuName: data.mainMenuName ?? null,
@@ -197,6 +230,8 @@ export async function upsertOrder(data: {
       extraOption: data.extraOption ?? null,
       note: data.note ?? null,
     }).where(and(sql`DATE(${orders.orderDate}) = ${data.today}`, eq(orders.employeeId, data.employeeId)));
+
+    return { isUpdate: true, oldMenu, newMenu };
   } else {
     await db.insert(orders).values({
       orderDate: data.today as unknown as Date,
@@ -208,6 +243,7 @@ export async function upsertOrder(data: {
       extraOption: data.extraOption ?? null,
       note: data.note ?? null,
     });
+    return { isUpdate: false, oldMenu: null, newMenu: null };
   }
 }
 
