@@ -313,10 +313,20 @@ export default function SummaryPage() {
           {ordersLoading ? (
             <LoadingState />
           ) : (
-            <div className="rounded-2xl p-6" style={{ background: "oklch(0.97 0.005 60)" }}>
-              <pre className="text-xs whitespace-pre-wrap break-words font-mono" style={{ color: "oklch(0.35 0.02 30)" }}>
-                {generateCopyText()}
-              </pre>
+            <div className="space-y-4">
+              {/* 제로콜라 총 개수 */}
+              <div className="rounded-2xl p-5" style={{ background: "oklch(0.35 0.08 250)" }}>
+                <div className="text-lg font-semibold" style={{ color: "oklch(0.85 0.15 250)" }}>
+                  제로콜라 총 개수: {orders?.filter(o => o.drinkOption === "제로콜라").length ?? 0}개
+                </div>
+              </div>
+              
+              {/* 복사용 텍스트 */}
+              <div className="rounded-2xl p-6" style={{ background: "oklch(0.97 0.005 60)" }}>
+                <pre className="text-xs whitespace-pre-wrap break-words font-mono" style={{ color: "oklch(0.35 0.02 30)" }}>
+                  {generateCopyText()}
+                </pre>
+              </div>
             </div>
           )}
         </TabsContent>
