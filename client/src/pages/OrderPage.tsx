@@ -320,9 +320,15 @@ export default function OrderPage() {
                         <SelectValue placeholder="메인메뉴를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent className="max-h-64">
-                        {selectableMainMenus.map((m: any) => (
-                          <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
-                        ))}
+                        {selectableMainMenus.length === 0 ? (
+                          <SelectItem value="__empty__" disabled>
+                            등록된 메뉴가 없습니다 (관리자에게 문의)
+                          </SelectItem>
+                        ) : (
+                          selectableMainMenus.map((m: any) => (
+                            <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

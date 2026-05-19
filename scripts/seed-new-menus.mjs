@@ -73,6 +73,21 @@ try {
             { name: '제육 도시락', type: 'main' },
             { name: '스팸 도시락', type: 'main' }
           ]
+        },
+        {
+          name: '오미마리',
+          menus: [
+            { name: '신선 김밥 닭강정 세트', type: 'main' },
+            { name: '참치 김밥 닭강정 세트', type: 'main' },
+            { name: '크래미 김밥 닭강정 세트', type: 'main' },
+            { name: '씨앗멸치 김밥 닭강정 세트', type: 'main' },
+            { name: '스팸 김밥 닭강정 세트', type: 'main' },
+            { name: '치즈계란 김밥 닭강정 세트', type: 'main' },
+            { name: '와사마요 불고기 김밥 닭강정 세트', type: 'main' },
+            { name: '지단 김밥 닭강정 세트', type: 'main' },
+            { name: '닭강정(소)', type: 'main' },
+            { name: '저녁식사 안해용', type: 'main' }
+          ]
         }
       ]
     },
