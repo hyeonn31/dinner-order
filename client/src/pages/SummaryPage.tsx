@@ -119,9 +119,9 @@ export default function SummaryPage() {
           <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
             주문 취합
           </h1>
-          <p className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
+          <div className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
             {today} &mdash; 실시간 신청 현황
-          </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2">
