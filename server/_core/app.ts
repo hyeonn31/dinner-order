@@ -4,11 +4,11 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic } from "./vite";
+import { serveStatic } from "./static";
 
 export type AppMode = "development" | "production";
 
-export async function createApp(mode: AppMode = "production"): Promise<Express> {
+export function createApp(mode: AppMode = "production"): Express {
   const app = express();
 
   app.use(express.json({ limit: "50mb" }));
@@ -31,3 +31,4 @@ export async function createApp(mode: AppMode = "production"): Promise<Express> 
 
   return app;
 }
+
