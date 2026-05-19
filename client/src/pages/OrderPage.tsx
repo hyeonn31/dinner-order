@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const DRINK_OPTIONS = ["선택 안함", "제로콜라", "펩시제로", "사이다제로", "콜라", "사이다"];
+const DRINK_OPTIONS = ["선택 안함", "제로콜라"];
 
 export default function OrderPage() {
   const utils = trpc.useUtils();
