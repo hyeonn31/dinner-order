@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "db:seed": "node scripts/seed-new-menus.mjs",
+    "db:seed-legacy": "node scripts/seed.mjs",
     "db:fix-omimari": "node scripts/fix-omimari-menus.mjs"
   },
   "dependencies": {

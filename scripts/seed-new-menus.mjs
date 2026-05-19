@@ -1,4 +1,20 @@
+/**
+ * [기본 시드] 최신 엑셀 기준 식당·메뉴 전체 교체
+ * 실행: pnpm run db:seed  (scripts/README.md 참고)
+ * 주의: orders, daily_settings 등 기존 데이터 삭제됨
+ */
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: join(__dirname, '../.env') });
+
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL 이 없습니다. .env 파일을 확인하세요.');
+  process.exit(1);
+}
 
 const connection = await mysql.createConnection(process.env.DATABASE_URL);
 

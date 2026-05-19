@@ -1,7 +1,6 @@
 /**
- * 오미마리 식당·메뉴 복구 (DB에 식당만 있고 메뉴가 없을 때)
- * 사용: node scripts/fix-omimari-menus.mjs
- * 필요: .env 의 DATABASE_URL (Vercel과 동일한 DB 권장)
+ * 오미마리 메뉴만 복구 (전체 시드 없이)
+ * 실행: pnpm run db:fix-omimari  (scripts/README.md 참고)
  */
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";

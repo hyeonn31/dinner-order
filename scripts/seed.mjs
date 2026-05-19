@@ -1,3 +1,8 @@
+/**
+ * [레거시 시드] 전체 19식당 + 메뉴 + 직원 95명 (초기 설치·백업용)
+ * 일상 운영은 seed-new-menus.mjs (pnpm run db:seed) 사용 권장
+ * 실행: pnpm run db:seed-legacy  (scripts/README.md 참고)
+ */
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
