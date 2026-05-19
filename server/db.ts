@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users, restaurants, restaurantCategories,
@@ -65,22 +65,101 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // ─── 식당 관련 ────────────────────────────────────────────────
-export async function getAllRestaurantsWithCategories() {
+export async function getRestaurantCategories() {
   const db = await getDb();
   if (!db) return [];
   return await db
     .select({
-      id: restaurants.id,
-      name: restaurants.name,
-      isActive: restaurants.isActive,
-      sortOrder: restaurants.sortOrder,
-      categoryId: restaurantCategories.id,
-      categoryName: restaurantCategories.name,
-      categorySortOrder: restaurantCategories.sortOrder,
+      id: restaurantCategories.id,
+      name: restaurantCategories.name,
+      sortOrder: restaurantCategories.sortOrder,
     })
+    .from(restaurantCategories)
+    .orderBy(restaurantCategories.sortOrder);
+}
+
+export type RestaurantWithCategory = {
+  id: number;
+  name: string;
+  isActive: boolean;
+  sortOrder: number;
+  categoryId: number;
+  categoryName: string;
+  categorySortOrder: number;
+};
+
+function restaurantWithCategorySelect() {
+  return {
+    id: restaurants.id,
+    name: restaurants.name,
+    isActive: restaurants.isActive,
+    sortOrder: restaurants.sortOrder,
+    categoryId: restaurants.categoryId,
+    categoryName: sql<string>`COALESCE(${restaurantCategories.name}, '미분류')`,
+    categorySortOrder: sql<number>`COALESCE(${restaurantCategories.sortOrder}, 999)`,
+  };
+}
+
+export async function getAllRestaurantsWithCategories(): Promise<RestaurantWithCategory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return await db
+    .select(restaurantWithCategorySelect())
     .from(restaurants)
-    .innerJoin(restaurantCategories, eq(restaurants.categoryId, restaurantCategories.id))
-    .orderBy(restaurantCategories.sortOrder, restaurants.sortOrder);
+    .leftJoin(restaurantCategories, eq(restaurants.categoryId, restaurantCategories.id))
+    .orderBy(sql`COALESCE(${restaurantCategories.sortOrder}, 999)`, restaurants.sortOrder);
+}
+
+export async function getRestaurantById(id: number): Promise<RestaurantWithCategory | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select(restaurantWithCategorySelect())
+    .from(restaurants)
+    .leftJoin(restaurantCategories, eq(restaurants.categoryId, restaurantCategories.id))
+    .where(eq(restaurants.id, id))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function insertRestaurant(data: { name: string; categoryId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const category = await db
+    .select({ id: restaurantCategories.id })
+    .from(restaurantCategories)
+    .where(eq(restaurantCategories.id, data.categoryId))
+    .limit(1);
+  if (category.length === 0) {
+    throw new Error("INVALID_CATEGORY");
+  }
+
+  const maxSort = await db
+    .select({ max: sql<number>`COALESCE(MAX(${restaurants.sortOrder}), 0)` })
+    .from(restaurants)
+    .where(eq(restaurants.categoryId, data.categoryId));
+  const nextSort = (maxSort[0]?.max ?? 0) + 1;
+
+  await db.insert(restaurants).values({
+    name: data.name,
+    categoryId: data.categoryId,
+    sortOrder: nextSort,
+    isActive: true,
+  });
+
+  const [created] = await db
+    .select(restaurantWithCategorySelect())
+    .from(restaurants)
+    .leftJoin(restaurantCategories, eq(restaurants.categoryId, restaurantCategories.id))
+    .where(and(eq(restaurants.name, data.name), eq(restaurants.categoryId, data.categoryId)))
+    .orderBy(desc(restaurants.id))
+    .limit(1);
+
+  if (!created) {
+    throw new Error("Failed to load created restaurant");
+  }
+  return created;
 }
 
 export async function getMenusByRestaurant(restaurantId: number) {

@@ -8,6 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { employees, restaurants, menuItems, dailySettings } from "../drizzle/schema";
 import {
   getAllRestaurantsWithCategories,
+  getRestaurantCategories,
+  insertRestaurant,
   getMenusByRestaurant,
   getAllEmployees,
   getTodaySettings,
@@ -49,6 +51,9 @@ export const appRouter = router({
 
   // ─── 식당 ─────────────────────────────────────────────────
   restaurant: router({
+    listCategories: publicProcedure.query(async () => {
+      return await getRestaurantCategories();
+    }),
     list: publicProcedure.query(async () => {
       return await getAllRestaurantsWithCategories();
     }),
@@ -59,10 +64,17 @@ export const appRouter = router({
       }),
     addRestaurant: publicProcedure.input(z.object({ name: z.string().min(1), categoryId: z.number(), password: z.string() })).mutation(async ({ input }) => {
       adminProcedure(input.password);
-      const db = await getDb();
-      if (!db) throw new Error("Database not available");
-      await db.insert(restaurants).values({ name: input.name, categoryId: input.categoryId });
-      return { success: true };
+      try {
+        return await insertRestaurant({ name: input.name.trim(), categoryId: input.categoryId });
+      } catch (error) {
+        if (error instanceof Error && error.message === "INVALID_CATEGORY") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "유효하지 않은 카테고리입니다" });
+        }
+        if (error instanceof Error && error.message === "Database not available") {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "데이터베이스에 연결할 수 없습니다" });
+        }
+        throw error;
+      }
     }),
     deleteRestaurant: publicProcedure.input(z.object({ restaurantId: z.number(), password: z.string() })).mutation(async ({ input }) => {
       adminProcedure(input.password);
