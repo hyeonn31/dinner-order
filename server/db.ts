@@ -198,7 +198,7 @@ export async function getTodaySettings(today: string) {
     })
     .from(dailySettings)
     .innerJoin(restaurants, eq(dailySettings.restaurantId, restaurants.id))
-    .innerJoin(restaurantCategories, eq(restaurants.categoryId, restaurantCategories.id))
+    .leftJoin(restaurantCategories, eq(restaurants.categoryId, restaurantCategories.id))
     .where(and(sql`DATE(${dailySettings.settingDate}) = ${today}`, eq(dailySettings.isActive, true)))
     .orderBy(restaurantCategories.sortOrder, restaurants.sortOrder);
 }
