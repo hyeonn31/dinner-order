@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  formatOrderMenuDisplay,
   formatMenuDisplayWithCount,
   groupIdenticalMenuOrders,
 } from "@shared/formatOrderMenu";
@@ -13,13 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function SummaryPage() {
   const utils = trpc.useUtils();
   const { data: orders, isLoading: ordersLoading } = trpc.order.todayAll.useQuery(undefined, { refetchInterval: 30000 });
-  const { data: summary, isLoading: summaryLoading } = trpc.order.summary.useQuery(undefined, { refetchInterval: 30000 });
   const { data: todayRestaurants } = trpc.daily.todayRestaurants.useQuery(undefined, { refetchInterval: 60000 });
   const [expandedRestaurants, setExpandedRestaurants] = useState<Set<string>>(new Set());
 
   const handleRefresh = () => {
     utils.order.todayAll.invalidate();
-    utils.order.summary.invalidate();
     toast.success("새로고침 완료!");
   };
 
@@ -176,7 +173,6 @@ export default function SummaryPage() {
       <Tabs defaultValue="summary">
         <TabsList className="mb-6">
           <TabsTrigger value="summary">주문 취합</TabsTrigger>
-          <TabsTrigger value="detail">직원별 상세</TabsTrigger>
           <TabsTrigger value="text">복사용 텍스트</TabsTrigger>
         </TabsList>
 
@@ -254,48 +250,6 @@ export default function SummaryPage() {
                   </div>
                 );
               })}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* 직원별 상세 탭 */}
-        <TabsContent value="detail">
-          {ordersLoading ? (
-            <LoadingState />
-          ) : !orders || orders.length === 0 ? (
-            <EmptyState message="아직 신청 내역이 없습니다." />
-          ) : (
-            <div className="rounded-2xl overflow-hidden"
-              style={{ background: "white", border: "1px solid oklch(0.88 0.01 60)" }}>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: "oklch(0.97 0.005 60)", borderBottom: "1px solid oklch(0.90 0.01 60)" }}>
-                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "oklch(0.35 0.02 30)" }}>이름</th>
-                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "oklch(0.35 0.02 30)" }}>식당</th>
-                    <th className="text-left px-4 py-3 font-semibold" style={{ color: "oklch(0.35 0.02 30)" }}>메인 메뉴</th>
-                    <th className="text-left px-4 py-3 font-semibold hidden sm:table-cell" style={{ color: "oklch(0.35 0.02 30)" }}>추가</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order, idx) => (
-                    <tr key={order.id}
-                      style={{ borderBottom: idx < orders.length - 1 ? "1px solid oklch(0.93 0.005 60)" : "none" }}>
-                      <td className="px-4 py-3 font-medium" style={{ color: "oklch(0.35 0.08 250)" }}>
-                        {order.employeeNickname}
-                      </td>
-                      <td className="px-4 py-3" style={{ color: "oklch(0.42 0.03 30)" }}>
-                        {order.restaurantName}
-                      </td>
-                      <td className="px-4 py-3" style={{ color: "oklch(0.35 0.02 30)" }}>
-                        {formatOrderMenuDisplay(order)}
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
-                        -
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
         </TabsContent>

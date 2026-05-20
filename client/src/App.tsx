@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import AdminPage from "./pages/AdminPage";
 import OrderPage from "./pages/OrderPage";
 import SummaryPage from "./pages/SummaryPage";
+import EmployeeDetailPage from "./pages/EmployeeDetailPage";
 import EmployeeManagePage from "./pages/EmployeeManagePage";
 import RestaurantManagePage from "./pages/RestaurantManagePage";
 import { HistoryPage } from "./pages/HistoryPage";
@@ -21,6 +22,7 @@ function Router() {
         <Route path="/admin" component={AdminPage} />
         <Route path="/order" component={OrderPage} />
         <Route path="/summary" component={SummaryPage} />
+        <Route path="/employee-detail" component={EmployeeDetailPage} />
         <Route path="/history" component={HistoryPage} />
         <Route path="/employee-manage" component={EmployeeManagePage} />
         <Route path="/restaurant-manage" component={RestaurantManagePage} />

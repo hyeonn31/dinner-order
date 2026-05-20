@@ -7,6 +7,7 @@ const navItems = [
   { path: "/order", label: "저녁 신청", icon: UtensilsCrossed, desc: "메뉴를 선택하세요" },
   { path: "/admin", label: "관리자", icon: Settings, desc: "식당 설정" },
   { path: "/summary", label: "주문 취합", icon: BarChart3, desc: "주문 현황 확인" },
+  { path: "/employee-detail", label: "직원별 상세", icon: Users, desc: "오늘 주문 메뉴 확인" },
   { path: "/history", label: "주문 이력", icon: History, desc: "과거 주문 조회" },
 ];
 
