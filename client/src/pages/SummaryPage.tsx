@@ -364,7 +364,7 @@ function LoadingState() {
       <div className="text-center">
         <div className="w-8 h-8 rounded-full border-2 border-transparent mx-auto mb-4"
           style={{ borderTopColor: "oklch(0.35 0.08 250)", animation: "spin 1s linear infinite" }} />
-        <p style={{ color: "oklch(0.55 0.02 30)" }}>로딩 중...</p>
+        <div style={{ color: "oklch(0.55 0.02 30)" }}>로딩 중...</div>
       </div>
     </div>
   );
@@ -375,7 +375,7 @@ function EmptyState({ message }: { message: string }) {
     <div className="flex items-center justify-center py-12">
       <div className="text-center">
         <Users className="w-12 h-12 mx-auto mb-3" style={{ color: "oklch(0.70 0.05 250)" }} />
-        <p style={{ color: "oklch(0.55 0.02 30)" }}>{message}</p>
+        <div style={{ color: "oklch(0.55 0.02 30)" }}>{message}</div>
       </div>
     </div>
   );
