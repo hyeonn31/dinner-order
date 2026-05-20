@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Search, Lock } from "lucide-react";
@@ -13,6 +13,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -36,6 +37,8 @@ export default function OrderPage() {
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [existingOrder, setExistingOrder] = useState<any>(null);
   const [pendingSubmit, setPendingSubmit] = useState<any>(null);
+  const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
+  const employeeDropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: menus } = trpc.restaurant.menus.useQuery(
     { restaurantId: selectedRestaurantId! },
@@ -74,6 +77,17 @@ export default function OrderPage() {
     setSideMenu("");
     setExtraOption("");
   }, [selectedRestaurantId]);
+
+  // 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (employeeDropdownRef.current && !employeeDropdownRef.current.contains(event.target as Node)) {
+        setIsEmployeeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const submitMutation = trpc.order.submit.useMutation({
     onSuccess: (data: any) => {
@@ -204,34 +218,69 @@ export default function OrderPage() {
       {!hasNoSetup && (
         <>
           {/* Main Form Card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.90 0.01 250)", boxShadow: "0 4px 24px oklch(0.20 0.03 250 / 0.08)" }}>
+          <div className="rounded-2xl" style={{ background: "white", border: "1px solid oklch(0.90 0.01 250)", boxShadow: "0 4px 24px oklch(0.20 0.03 250 / 0.08)", overflow: "visible" }}>
 
             {/* Step 1: 이름 선택 */}
-            <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)" }}>
+            <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)", overflow: "visible" }}>
               <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 250)" }}>
                 1. 이름 선택
               </Label>
-              <div className="relative mb-2">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="이름 검색..."
-                  value={employeeSearchQuery}
-                  onChange={(e) => setEmployeeSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="relative" ref={employeeDropdownRef}>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="이름 검색..."
+                    value={employeeSearchQuery}
+                    onChange={(e) => {
+                      setEmployeeSearchQuery(e.target.value);
+                      setIsEmployeeDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsEmployeeDropdownOpen(true)}
+                    className="pl-10"
+                  />
+                </div>
+                
+                {/* 커스텀 드롭다운 */}
+                {isEmployeeDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-input rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+                    {filteredEmployees.length > 0 ? (
+                      filteredEmployees.map((emp) => (
+                        <div
+                          key={emp.id}
+                          onClick={() => {
+                            setSelectedEmployeeId(emp.id);
+                            setEmployeeSearchQuery("");
+                            setIsEmployeeDropdownOpen(false);
+                          }}
+                          className="px-4 py-2 hover:bg-accent cursor-pointer text-sm transition-colors"
+                        >
+                          {emp.nickname}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-muted-foreground text-center">
+                        검색 결과가 없습니다
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* 선택된 이름 표시 */}
+                {selectedEmployeeId && (
+                  <div className="p-3 bg-accent rounded-md text-sm font-medium" style={{ color: "oklch(0.35 0.03 250)" }}>
+                    선택됨: {employees?.find(e => e.id === selectedEmployeeId)?.nickname}
+                    <button
+                      onClick={() => {
+                        setSelectedEmployeeId(null);
+                        setEmployeeSearchQuery("");
+                      }}
+                      className="ml-2 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
-              <Select value={selectedEmployeeId?.toString() || ""} onValueChange={(v) => setSelectedEmployeeId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="이름을 선택하세요..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredEmployees.map((emp) => (
-                    <SelectItem key={emp.id} value={emp.id.toString()}>
-                      {emp.nickname}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Step 2: 식당 선택 */}
@@ -296,30 +345,21 @@ export default function OrderPage() {
                   )}
 
                   {/* 음료 */}
-                  {drinkMenus.length > 0 || todayRestaurants?.find(r => r.restaurantId === selectedRestaurantId)?.categoryName !== "햄버거" ? (
-                    <div>
-                      <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>음료</div>
-                      <Select value={drinkOption} onValueChange={setDrinkOption}>
-                        <SelectTrigger className="w-full h-11">
-                          <SelectValue placeholder="음료를 선택하세요" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          {drinkMenus.length > 0 ? (
-                            <>
-                              <SelectItem value="none">선택 안함</SelectItem>
-                              {drinkMenus.map((m: any) => (
-                                <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
-                              ))}
-                            </>
-                          ) : (
-                            DRINK_OPTIONS.map((opt) => (
-                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : null}
+                  <div>
+                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>음료</div>
+                    <Select value={drinkOption} onValueChange={setDrinkOption}>
+                      <SelectTrigger className="w-full h-11">
+                        <SelectValue placeholder="음료를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DRINK_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   {/* 추가 옵션 */}
                   {optionMenus.length > 0 && (
@@ -338,21 +378,37 @@ export default function OrderPage() {
                       </Select>
                     </div>
                   )}
+<<<<<<< HEAD
+=======
+
+                  {/* 요청사항 */}
+                  <div>
+                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>요청사항</div>
+                    <Textarea
+                      placeholder="특별한 요청사항이 있으면 입력하세요"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="resize-none"
+                    />
+                  </div>
+>>>>>>> 39b78db95383695c70f0cb2a446603f312d509e4
                 </div>
               </div>
             )}
 
-            {/* Submit Button */}
-            {selectedEmployeeId && selectedRestaurantId && (
-              <div className="p-6 flex gap-2">
+            {/* Step 4: 신청 버튼 */}
+            {selectedEmployeeId && selectedRestaurantId && mainMenu && (
+              <div className="p-6 flex gap-3">
                 <Button
                   onClick={handleSubmit}
-                  disabled={submitMutation.isPending || isClosed}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  disabled={submitMutation.isPending}
+                  className="flex-1 h-11 text-base font-semibold"
+                  style={{ background: "oklch(0.55 0.18 140)", color: "white" }}
                 >
                   <Send className="w-4 h-4 mr-2" />
                   {submitMutation.isPending ? "신청 중..." : "신청하기"}
                 </Button>
+<<<<<<< HEAD
                 <Button
                   onClick={() => {
                     setSelectedEmployeeId(null);
@@ -367,50 +423,46 @@ export default function OrderPage() {
                 >
                   <X className="w-4 h-4" />
                 </Button>
+=======
+>>>>>>> 39b78db95383695c70f0cb2a446603f312d509e4
               </div>
             )}
           </div>
+
+          {/* 중복 신청 확인 대화 */}
+          <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-orange-500" />
+                  이미 신청하셨습니다
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  <div className="mt-2 space-y-2">
+                    <p>기존 신청: <span className="font-semibold">{existingOrder?.mainMenuName}</span></p>
+                    <p>새로운 신청: <span className="font-semibold">{pendingSubmit?.mainMenuName}</span></p>
+                    <p className="text-sm mt-4">신청을 수정하시겠습니까?</p>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>취소</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    if (pendingSubmit) {
+                      submitMutation.mutate(pendingSubmit);
+                      setShowDuplicateDialog(false);
+                    }
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  수정하기
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
-
-      {/* 중복 신청 확인 대화 */}
-      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>이미 저녁식사를 신청했습니다</AlertDialogTitle>
-            <AlertDialogDescription>
-              {existingOrder && (
-                <div className="mt-4 space-y-2">
-                  <p className="text-sm">
-                    <span className="font-semibold">기존 주문:</span> {existingOrder.mainMenuName}
-                    {existingOrder.sideMenuName && ` + ${existingOrder.sideMenuName}`}
-                    {existingOrder.drinkOption && ` + ${existingOrder.drinkOption}`}
-                    {existingOrder.extraOption && ` + ${existingOrder.extraOption}`}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-semibold">식당:</span> {existingOrder.restaurantName}
-                  </p>
-                  <p className="text-sm mt-4">변경하시겠습니까?</p>
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-2 justify-end">
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (pendingSubmit) {
-                  submitMutation.mutate(pendingSubmit);
-                  setShowDuplicateDialog(false);
-                }
-              }}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              변경하기
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
