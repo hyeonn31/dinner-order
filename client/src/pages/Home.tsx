@@ -17,7 +17,7 @@ export default function Home() {
           <Clock className="w-4 h-4" />
           매일 오후 5시 ~ 6시 운영
         </div>
-        <h1 className="text-4xl font-bold mb-3" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
+        <h1 className="text-4xl font-bold mb-3" style={{ color: "oklch(0.20 0.03 250)" }}>
           저녁식사 신청 시스템
         </h1>
 

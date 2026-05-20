@@ -111,7 +111,7 @@ export default function SummaryPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)", fontFamily: "'Noto Sans KR', serif" }}>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "oklch(0.20 0.03 250)" }}>
             주문 취합
           </h1>
           <div className="text-sm" style={{ color: "oklch(0.50 0.03 250)" }}>
