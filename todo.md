@@ -140,3 +140,6 @@
 
 ## 로고 변경 (11차)
 - [x] ABLE 로고로 변경: AppLayout.tsx에서 기존 아이콘 대신 ABLE 로고 이미지 사용
+
+## 버그 수정 (12차)
+- [x] 직원 관리 페이지 직원 추가 기능 수정: form 요소 추가, onClick → type="submit" 변경, async/await 처리 추가
