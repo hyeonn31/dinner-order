@@ -28,10 +28,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                style={{ background: "oklch(0.55 0.18 250 / 0.2)", border: "1px solid oklch(0.55 0.18 250 / 0.4)" }}>
-                <UtensilsCrossed className="w-5 h-5" style={{ color: "oklch(0.55 0.18 250)" }} />
-              </div>
+              <img src="/manus-storage/able-logo_9eedc920.png" alt="ABLE Logo" className="h-10" />
               <div>
                 <div className="font-semibold text-white text-sm tracking-wide" style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 600 }}>
                   Dinner Order

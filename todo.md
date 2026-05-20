@@ -137,3 +137,6 @@
 
 ## 버그 수정 (10차)
 - [x] SummaryPage: <p> 태그 안에 <div> 중첩 오류 수정 (LoadingState, EmptyState에서 <p> → <div>로 변경)
+
+## 로고 변경 (11차)
+- [x] ABLE 로고로 변경: AppLayout.tsx에서 기존 아이콘 대신 ABLE 로고 이미지 사용
