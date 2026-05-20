@@ -141,6 +141,19 @@ function AdminContent() {
     toggleClosedMutation.mutate({ password: ADMIN_PASSWORD });
   };
 
+  const clearOrdersMutation = trpc.order.clearAll.useMutation({
+    onSuccess: () => {
+      utils.order.todayAll.invalidate();
+      utils.order.summary.invalidate();
+      toast.success("모든 주문 데이터가 삭제되었습니다.");
+    },
+    onError: () => toast.error("삭제 중 오류가 발생했습니다."),
+  });
+
+  const handleClearOrders = () => {
+    clearOrdersMutation.mutate({ password: ADMIN_PASSWORD });
+  };
+
   const groupedByCategory = allRestaurants?.reduce((acc, r) => {
     if (!acc[r.categoryName]) acc[r.categoryName] = [];
     acc[r.categoryName].push(r);
@@ -253,7 +266,7 @@ function AdminContent() {
                 className="flex-1 min-w-[120px]"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                초기화
+                오늘 초기화
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -273,6 +286,39 @@ function AdminContent() {
                   className="bg-destructive hover:bg-destructive/90"
                 >
                   초기화
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="flex-1 min-w-[120px] border-red-600 text-red-700 hover:bg-red-50"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                전체 삭제
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  모든 주문 데이터 삭제
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  ⚠️ 주의: 이 작업은 되돌릴 수 없습니다. 모든 주문 이력 데이터가 영구 삭제됩니다.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>취소</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleClearOrders}
+                  disabled={clearOrdersMutation.isPending}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {clearOrdersMutation.isPending ? "삭제 중..." : "삭제"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

@@ -5,7 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { sql, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { employees, restaurants, menuItems, dailySettings } from "../drizzle/schema";
+import { employees, restaurants, menuItems, dailySettings, orders } from "../drizzle/schema";
 import {
   getAllRestaurantsWithCategories,
   getRestaurantCategories,
@@ -221,6 +221,15 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return await getOrderHistory(input);
+      }),
+    clearAll: publicProcedure
+      .input(z.object({ password: z.string() }))
+      .mutation(async ({ input }) => {
+        adminProcedure(input.password);
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+        await db.delete(orders);
+        return { success: true };
       }),
   }),
 });
