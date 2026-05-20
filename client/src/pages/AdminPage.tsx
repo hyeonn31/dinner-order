@@ -145,9 +145,10 @@ function AdminContent() {
     onSuccess: () => {
       utils.order.todayAll.invalidate();
       utils.order.summary.invalidate();
+      utils.order.getHistory.invalidate();
       toast.success("모든 주문 데이터가 삭제되었습니다.");
     },
-    onError: () => toast.error("삭제 중 오류가 발생했습니다."),
+    onError: () => toast.error("삭제 중 오류가 발생했습니다.")
   });
 
   const handleClearOrders = () => {
