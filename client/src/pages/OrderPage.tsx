@@ -5,7 +5,6 @@ import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Searc
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -31,7 +30,6 @@ export default function OrderPage() {
   const [sideMenu, setSideMenu] = useState("");
   const [drinkOption, setDrinkOption] = useState("");
   const [extraOption, setExtraOption] = useState("");
-  const [note, setNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
   const [isClosed, setIsClosed] = useState(false);
@@ -92,7 +90,6 @@ export default function OrderPage() {
         setSideMenu("");
         setDrinkOption("");
         setExtraOption("");
-        setNote("");
         setSubmitted(false);
         setEmployeeSearchQuery("");
         utils.order.todayAll.invalidate();
@@ -125,7 +122,6 @@ export default function OrderPage() {
           sideMenuName: normalizeOption(sideMenu),
           drinkOption: normalizeOption(drinkOption),
           extraOption: normalizeOption(extraOption),
-          note: note || undefined,
         });
         setShowDuplicateDialog(true);
         return;
@@ -139,7 +135,6 @@ export default function OrderPage() {
         sideMenuName: normalizeOption(sideMenu),
         drinkOption: normalizeOption(drinkOption),
         extraOption: normalizeOption(extraOption),
-        note: note || undefined,
       });
     } catch (error: any) {
       toast.error(error.message || "기존 주문 확인 중 오류가 발생했습니다");
@@ -343,18 +338,6 @@ export default function OrderPage() {
                       </Select>
                     </div>
                   )}
-
-                  {/* 특수 요청 */}
-                  <div>
-                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>특수 요청</div>
-                    <Textarea
-                      placeholder="특수 요청사항이 있으면 입력하세요 (예: 맵게, 덜 맵게, 소스 제외 등)"
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      className="resize-none"
-                      rows={3}
-                    />
-                  </div>
                 </div>
               </div>
             )}
@@ -378,7 +361,6 @@ export default function OrderPage() {
                     setSideMenu("");
                     setDrinkOption("");
                     setExtraOption("");
-                    setNote("");
                   }}
                   variant="outline"
                   className="px-4"
