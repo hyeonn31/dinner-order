@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
+import {
+  formatOrderMenuDisplay,
+  formatMenuDisplayWithCount,
+  groupIdenticalMenuOrders,
+} from "@shared/formatOrderMenu";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Copy, RefreshCw, Users, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
@@ -35,15 +39,13 @@ export default function SummaryPage() {
     const lines: string[] = [`📋 저녁식사 주문 취합 (${today})`, ""];
 
     // 식당별로 그룹화
-    const groupedByRestaurant = new Map<string, { items: string[], zeroCokCount: number }>();
+    const groupedByRestaurant = new Map<string, { orders: NonNullable<typeof orders>; zeroCokCount: number }>();
     for (const order of orders) {
-      const fullMenu = formatOrderMenuDisplay(order);
-
       if (!groupedByRestaurant.has(order.restaurantName)) {
-        groupedByRestaurant.set(order.restaurantName, { items: [], zeroCokCount: 0 });
+        groupedByRestaurant.set(order.restaurantName, { orders: [], zeroCokCount: 0 });
       }
       const group = groupedByRestaurant.get(order.restaurantName)!;
-      group.items.push(fullMenu);
+      group.orders.push(order);
       if (order.drinkOption === "제로콜라") {
         group.zeroCokCount++;
       }
@@ -51,8 +53,8 @@ export default function SummaryPage() {
 
     groupedByRestaurant.forEach((group, restaurant) => {
       lines.push(`▶ ${restaurant} (제로콜라 ${group.zeroCokCount}개)`);
-      for (const item of group.items) {
-        lines.push(`  • ${item}`);
+      for (const { menu, count } of groupIdenticalMenuOrders(group.orders)) {
+        lines.push(`  • ${formatMenuDisplayWithCount(menu, count)}`);
       }
       lines.push("");
     });
@@ -190,7 +192,9 @@ export default function SummaryPage() {
                 const isExpanded = expandedRestaurants.has(restaurant);
                 const totalCount = restaurantOrders?.length ?? 0;
                 const zeroCokCount = (restaurantOrders ?? []).filter(o => o.drinkOption === "제로콜라").length;
-                const items = (restaurantOrders ?? []).map(order => formatOrderMenuDisplay(order));
+                const items = groupIdenticalMenuOrders(restaurantOrders ?? []).map(({ menu, count }) =>
+                  formatMenuDisplayWithCount(menu, count)
+                );
 
                 return (
                   <div key={restaurant} className="rounded-2xl overflow-hidden"

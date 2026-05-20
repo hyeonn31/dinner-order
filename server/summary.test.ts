@@ -1,4 +1,8 @@
-import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
+import {
+  formatOrderMenuDisplay,
+  formatMenuDisplayWithCount,
+  groupIdenticalMenuOrders,
+} from "@shared/formatOrderMenu";
 import { describe, expect, it, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
@@ -156,6 +160,27 @@ describe("Order Summary Page", () => {
     // 두 번째 식당 (본도시락)
     expect(summary[1]?.restaurant).toBe("본도시락");
     expect(summary[1]?.items).toHaveLength(1);
+  });
+
+  it("should group identical menu orders with x count", () => {
+    const grouped = groupIdenticalMenuOrders([
+      { mainMenuName: "치킨버거", sideMenuName: "감자튀김", extraOption: "단품", drinkOption: "제로콜라" },
+      { mainMenuName: "치킨버거", sideMenuName: "감자튀김", extraOption: "단품", drinkOption: "제로콜라" },
+      { mainMenuName: "치킨버거", sideMenuName: "감자튀김", extraOption: "단품", drinkOption: "제로콜라" },
+      { mainMenuName: "새우버거", sideMenuName: "감자튀김", extraOption: null, drinkOption: "제로콜라" },
+    ]);
+
+    expect(grouped).toHaveLength(2);
+    expect(grouped[0]).toEqual({
+      menu: "치킨버거 + 감자튀김 + 단품 + 제로콜라",
+      count: 3,
+    });
+    expect(formatMenuDisplayWithCount(grouped[0]!.menu, grouped[0]!.count)).toBe(
+      "치킨버거 + 감자튀김 + 단품 + 제로콜라 x3"
+    );
+    expect(formatMenuDisplayWithCount(grouped[1]!.menu, grouped[1]!.count)).toBe(
+      "새우버거 + 감자튀김 + 제로콜라"
+    );
   });
 
   it("should show side menu for any restaurant when selected", () => {

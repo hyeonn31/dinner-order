@@ -29,3 +29,26 @@ export function formatOrderMenuDisplay(
   if (isSelectedMenuPart(order.drinkOption)) parts.push(order.drinkOption!.trim());
   return parts.length > 0 ? parts.join(" + ") : "-";
 }
+
+export type GroupedMenuItem = { menu: string; count: number };
+
+/** 메인+사이드+추가옵션+음료가 완전히 같은 주문끼리 묶기 */
+export function groupIdenticalMenuOrders<T extends OrderMenuFields>(
+  orders: T[],
+  options?: { mainFallback?: string }
+): GroupedMenuItem[] {
+  const counts = new Map<string, number>();
+  const order: string[] = [];
+
+  for (const row of orders) {
+    const key = formatOrderMenuDisplay(row, options);
+    if (!counts.has(key)) order.push(key);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  return order.map(menu => ({ menu, count: counts.get(menu)! }));
+}
+
+export function formatMenuDisplayWithCount(menu: string, count: number): string {
+  return count > 1 ? `${menu} x${count}` : menu;
+}
