@@ -27,8 +27,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <img src="/manus-storage/able-logo_9eedc920.png" alt="ABLE Logo" className="h-10" />
+            <Link href="/" className="flex items-center gap-5 group">
+              <img src="/manus-storage/able-logo_9eedc920.png" alt="ABLE Logo" className="h-10 shrink-0" />
               <div>
                 <div className="font-semibold text-white text-sm tracking-wide" style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 600 }}>
                   Dinner Order
