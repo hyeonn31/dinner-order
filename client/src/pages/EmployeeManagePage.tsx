@@ -19,7 +19,6 @@ export default function EmployeeManagePage() {
   const { data: employees, isLoading } = trpc.employee.list.useQuery();
   const [newName, setNewName] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; nickname: string } | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handlePasswordSubmit = () => {
     if (password === ADMIN_PASSWORD) {
@@ -36,7 +35,6 @@ export default function EmployeeManagePage() {
     onSuccess: () => {
       toast.success("직원이 추가되었습니다");
       setNewName("");
-      setIsDialogOpen(false);
       utils.employee.list.invalidate();
     },
     onError: (error) => {
@@ -55,12 +53,17 @@ export default function EmployeeManagePage() {
     },
   });
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newName.trim()) {
       toast.error("이름을 입력해 주세요");
       return;
     }
-    addMutation.mutate({ nickname: newName.trim(), password: ADMIN_PASSWORD });
+    console.log("Adding employee:", newName);
+    try {
+      await addMutation.mutateAsync({ nickname: newName.trim(), password: ADMIN_PASSWORD });
+    } catch (error) {
+      console.error("Add mutation error:", error);
+    }
   };
 
   const handleDelete = () => {
@@ -124,16 +127,22 @@ export default function EmployeeManagePage() {
             <CardDescription>새로운 직원의 이름을 입력하고 추가 버튼을 클릭하세요</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAdd();
+              }}
+              className="flex gap-2"
+            >
               <Input
                 placeholder="직원 이름 (닉네임)"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleAdd()}
                 disabled={addMutation.isPending}
+                autoComplete="off"
               />
               <Button
-                onClick={handleAdd}
+                type="submit"
                 disabled={addMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700"
               >
@@ -144,7 +153,7 @@ export default function EmployeeManagePage() {
                 )}
                 추가
               </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
 
