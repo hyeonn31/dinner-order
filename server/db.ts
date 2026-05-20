@@ -379,3 +379,60 @@ export async function getOrderSummary(today: string) {
     items: Array.from(menus.entries()).map(([menu, count]) => ({ menu, count })),
   }));
 }
+
+
+
+
+// ─── 주문 이력 조회 ──────────────────────────────────────────
+export async function getOrderHistory({
+  startDate,
+  endDate,
+  employeeId,
+  restaurantId,
+}: {
+  startDate?: string;
+  endDate?: string;
+  employeeId?: number;
+  restaurantId?: number;
+} = {}) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [];
+  
+  if (startDate) {
+    conditions.push(sql`DATE(${orders.orderDate}) >= ${startDate}`);
+  }
+  if (endDate) {
+    conditions.push(sql`DATE(${orders.orderDate}) <= ${endDate}`);
+  }
+  if (employeeId) {
+    conditions.push(eq(orders.employeeId, employeeId));
+  }
+  if (restaurantId) {
+    conditions.push(eq(orders.restaurantId, restaurantId));
+  }
+  
+  const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
+  
+  return await db
+    .select({
+      id: orders.id,
+      orderDate: orders.orderDate,
+      employeeId: orders.employeeId,
+      employeeNickname: employees.nickname,
+      restaurantId: orders.restaurantId,
+      restaurantName: restaurants.name,
+      mainMenuName: orders.mainMenuName,
+      sideMenuName: orders.sideMenuName,
+      drinkOption: orders.drinkOption,
+      extraOption: orders.extraOption,
+      note: orders.note,
+      createdAt: orders.createdAt,
+    })
+    .from(orders)
+    .innerJoin(employees, eq(orders.employeeId, employees.id))
+    .innerJoin(restaurants, eq(orders.restaurantId, restaurants.id))
+    .where(whereCondition)
+    .orderBy(orders.orderDate, employees.nickname);
+}

@@ -21,6 +21,7 @@ import {
   deleteOrder,
   resetTodayData,
   getOrderSummary,
+  getOrderHistory,
   getDb,
 } from "./db";
 
@@ -211,6 +212,16 @@ export const appRouter = router({
       const today = getToday();
       return await getOrderSummary(today);
     }),
+    getHistory: publicProcedure
+      .input(z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        employeeId: z.number().optional(),
+        restaurantId: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await getOrderHistory(input);
+      }),
   }),
 });
 

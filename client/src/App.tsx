@@ -10,6 +10,7 @@ import OrderPage from "./pages/OrderPage";
 import SummaryPage from "./pages/SummaryPage";
 import EmployeeManagePage from "./pages/EmployeeManagePage";
 import RestaurantManagePage from "./pages/RestaurantManagePage";
+import { HistoryPage } from "./pages/HistoryPage";
 import AppLayout from "./components/AppLayout";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
         <Route path="/admin" component={AdminPage} />
         <Route path="/order" component={OrderPage} />
         <Route path="/summary" component={SummaryPage} />
+        <Route path="/history" component={HistoryPage} />
         <Route path="/employee-manage" component={EmployeeManagePage} />
         <Route path="/restaurant-manage" component={RestaurantManagePage} />
         <Route path="/404" component={NotFound} />
