@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { getHistoryDefaultDateRange } from "@shared/dates";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,14 +22,19 @@ import {
 } from "@/components/ui/table";
 
 export function HistoryPage() {
-  // 기본값: 지난 30일
-  const today = new Date();
-  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const defaultStartDate = thirtyDaysAgo.toISOString().split('T')[0];
-  const defaultEndDate = today.toISOString().split('T')[0];
+  const [location] = useLocation();
+  const defaultRange = () => getHistoryDefaultDateRange();
 
-  const [startDate, setStartDate] = useState(defaultStartDate);
-  const [endDate, setEndDate] = useState(defaultEndDate);
+  const [startDate, setStartDate] = useState(() => defaultRange().startDate);
+  const [endDate, setEndDate] = useState(() => defaultRange().endDate);
+
+  // 페이지 진입 시 종료=오늘, 시작=한 달 전으로 갱신
+  useEffect(() => {
+    if (location !== "/history") return;
+    const { startDate: start, endDate: end } = defaultRange();
+    setStartDate(start);
+    setEndDate(end);
+  }, [location]);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [selectedRestaurant, setSelectedRestaurant] = useState<string>("");
 
@@ -38,12 +45,15 @@ export function HistoryPage() {
   const { data: restaurants = [], isLoading: restaurantsLoading } = trpc.restaurant.list.useQuery();
 
   // 주문 이력 조회
-  const { data: history = [], isLoading: historyLoading } = trpc.order.getHistory.useQuery({
-    startDate: startDate,
-    endDate: endDate,
-    employeeId: selectedEmployee ? parseInt(selectedEmployee) : undefined,
-    restaurantId: selectedRestaurant ? parseInt(selectedRestaurant) : undefined,
-  });
+  const { data: history = [], isLoading: historyLoading } = trpc.order.getHistory.useQuery(
+    {
+      startDate,
+      endDate,
+      employeeId: selectedEmployee ? parseInt(selectedEmployee) : undefined,
+      restaurantId: selectedRestaurant ? parseInt(selectedRestaurant) : undefined,
+    },
+    { enabled: !!startDate && !!endDate }
+  );
 
   // 통계 계산
   const stats = useMemo(() => {
@@ -87,11 +97,14 @@ export function HistoryPage() {
   }, [history]);
 
   const handleReset = () => {
-    setStartDate(defaultStartDate);
-    setEndDate(defaultEndDate);
+    const { startDate: start, endDate: end } = defaultRange();
+    setStartDate(start);
+    setEndDate(end);
     setSelectedEmployee("");
     setSelectedRestaurant("");
   };
+
+  const maxEndDate = defaultRange().endDate;
 
   return (
     <div className="container mx-auto py-8">
@@ -120,6 +133,7 @@ export function HistoryPage() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate}
+                max={maxEndDate}
               />
             </div>
             <div>
