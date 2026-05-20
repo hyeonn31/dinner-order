@@ -282,7 +282,7 @@ export default function SummaryPage() {
       {todayRestaurants && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4" style={{ color: "oklch(0.20 0.03 250)" }}>
-            미신청 직원
+            ^---^
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Placeholder for not-ordered employees */}
