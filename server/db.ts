@@ -398,13 +398,13 @@ export async function getOrderHistory({
   const db = await getDb();
   if (!db) return [];
   
-  const conditions = [];
+  const conditions: any[] = [];
   
   if (startDate) {
-    conditions.push(sql`DATE(${orders.orderDate}) >= ${startDate}`);
+    conditions.push(sql`DATE(${orders.orderDate}) >= DATE(${startDate})`);
   }
   if (endDate) {
-    conditions.push(sql`DATE(${orders.orderDate}) <= ${endDate}`);
+    conditions.push(sql`DATE(${orders.orderDate}) <= DATE(${endDate})`);
   }
   if (employeeId) {
     conditions.push(eq(orders.employeeId, employeeId));

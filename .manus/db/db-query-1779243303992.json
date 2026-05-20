@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as total_orders, COUNT(DISTINCT DATE(orderDate)) as days_with_orders FROM orders;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3J1HxhZJ5kfexCn.root --database CQun8PEDQtuoHttDtuh4Y8 --execute SELECT COUNT(*) as total_orders, COUNT(DISTINCT DATE(orderDate)) as days_with_orders FROM orders;",
+  "rows": [
+    {
+      "total_orders": "11",
+      "days_with_orders": "5"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_orders\tdays_with_orders\n11\t5\n",
+  "stderr": "",
+  "execution_time_ms": 1763
+}

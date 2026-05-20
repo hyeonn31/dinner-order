@@ -20,8 +20,14 @@ import {
 } from "@/components/ui/table";
 
 export function HistoryPage() {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // 기본값: 지난 30일
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const defaultStartDate = thirtyDaysAgo.toISOString().split('T')[0];
+  const defaultEndDate = today.toISOString().split('T')[0];
+
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [selectedRestaurant, setSelectedRestaurant] = useState<string>("");
 
@@ -33,8 +39,8 @@ export function HistoryPage() {
 
   // 주문 이력 조회
   const { data: history = [], isLoading: historyLoading } = trpc.order.getHistory.useQuery({
-    startDate: startDate || undefined,
-    endDate: endDate || undefined,
+    startDate: startDate,
+    endDate: endDate,
     employeeId: selectedEmployee ? parseInt(selectedEmployee) : undefined,
     restaurantId: selectedRestaurant ? parseInt(selectedRestaurant) : undefined,
   });
@@ -81,8 +87,8 @@ export function HistoryPage() {
   }, [history]);
 
   const handleReset = () => {
-    setStartDate("");
-    setEndDate("");
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
     setSelectedEmployee("");
     setSelectedRestaurant("");
   };
@@ -104,6 +110,7 @@ export function HistoryPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                max={endDate}
               />
             </div>
             <div>
@@ -112,6 +119,7 @@ export function HistoryPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
               />
             </div>
             <div>
