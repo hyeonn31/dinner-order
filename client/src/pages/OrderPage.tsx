@@ -223,10 +223,10 @@ export default function OrderPage() {
       {!hasNoSetup && (
         <>
           {/* Main Form Card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.90 0.01 250)", boxShadow: "0 4px 24px oklch(0.20 0.03 250 / 0.08)" }}>
+          <div className="rounded-2xl" style={{ background: "white", border: "1px solid oklch(0.90 0.01 250)", boxShadow: "0 4px 24px oklch(0.20 0.03 250 / 0.08)", overflow: "visible" }}>
 
             {/* Step 1: 이름 선택 */}
-            <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)" }}>
+            <div className="p-6 border-b" style={{ borderColor: "oklch(0.92 0.01 250)", overflow: "visible" }}>
               <Label className="text-sm font-semibold mb-3 block" style={{ color: "oklch(0.35 0.03 250)" }}>
                 1. 이름 선택
               </Label>
