@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ChevronDown, Send, X, CheckCircle2, UtensilsCrossed, AlertCircle, Search, Lock } from "lucide-react";
@@ -378,20 +379,6 @@ export default function OrderPage() {
                       </Select>
                     </div>
                   )}
-<<<<<<< HEAD
-=======
-
-                  {/* 요청사항 */}
-                  <div>
-                    <div className="text-xs font-medium mb-1.5" style={{ color: "oklch(0.55 0.02 250)" }}>요청사항</div>
-                    <Textarea
-                      placeholder="특별한 요청사항이 있으면 입력하세요"
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      className="resize-none"
-                    />
-                  </div>
->>>>>>> 39b78db95383695c70f0cb2a446603f312d509e4
                 </div>
               </div>
             )}
@@ -408,7 +395,6 @@ export default function OrderPage() {
                   <Send className="w-4 h-4 mr-2" />
                   {submitMutation.isPending ? "신청 중..." : "신청하기"}
                 </Button>
-<<<<<<< HEAD
                 <Button
                   onClick={() => {
                     setSelectedEmployeeId(null);
@@ -423,8 +409,6 @@ export default function OrderPage() {
                 >
                   <X className="w-4 h-4" />
                 </Button>
-=======
->>>>>>> 39b78db95383695c70f0cb2a446603f312d509e4
               </div>
             )}
           </div>
@@ -439,8 +423,8 @@ export default function OrderPage() {
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   <div className="mt-2 space-y-2">
-                    <p>기존 신청: <span className="font-semibold">{existingOrder?.mainMenuName}</span></p>
-                    <p>새로운 신청: <span className="font-semibold">{pendingSubmit?.mainMenuName}</span></p>
+                    <p>기존 신청: <span className="font-semibold">{existingOrder ? formatOrderMenuDisplay(existingOrder) : "-"}</span></p>
+                    <p>새로운 신청: <span className="font-semibold">{pendingSubmit ? formatOrderMenuDisplay(pendingSubmit) : "-"}</span></p>
                     <p className="text-sm mt-4">신청을 수정하시겠습니까?</p>
                   </div>
                 </AlertDialogDescription>

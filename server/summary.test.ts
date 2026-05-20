@@ -1,3 +1,4 @@
+import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
 import { describe, expect, it, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
@@ -134,25 +135,7 @@ describe("Order Summary Page", () => {
     const orders = await caller.order.todayAll();
     const order = orders[0];
 
-    // 메뉴 표시 형식 생성
-    const isHamburger = order!.restaurantName.includes('맘스터치') || 
-                       order!.restaurantName.includes('롯데리아') || 
-                       order!.restaurantName.includes('프랭크');
-    let menuParts = [order!.mainMenuName];
-    
-    if (isHamburger && order!.sideMenuName) {
-      menuParts.push(order!.sideMenuName);
-    }
-    
-    if (order!.drinkOption) {
-      menuParts.push(order!.drinkOption);
-    }
-    
-    if (order!.extraOption) {
-      menuParts.push(order!.extraOption);
-    }
-    
-    const displayText = menuParts.filter(Boolean).join(" + ");
+    const displayText = formatOrderMenuDisplay(order!);
 
     expect(displayText).toBe("시저 샐러드 + 제로콜라");
   });
@@ -175,45 +158,28 @@ describe("Order Summary Page", () => {
     expect(summary[1]?.items).toHaveLength(1);
   });
 
-  it("should handle hamburger with side menu correctly", async () => {
-    const ctx = createTestContext();
-    
-    // 햄버거 주문 데이터
+  it("should show side menu for any restaurant when selected", () => {
+    const saladOrder = {
+      mainMenuName: "시저 샐러드",
+      sideMenuName: "통밀빵",
+      extraOption: null,
+      drinkOption: "제로콜라",
+    };
+
+    expect(formatOrderMenuDisplay(saladOrder)).toBe("시저 샐러드 + 통밀빵 + 제로콜라");
+  });
+
+  it("should handle burger order with side menu correctly", async () => {
     const hamburgerOrder = {
-      id: 4,
-      employeeId: 4,
-      employeeNickname: "Zelda",
-      restaurantId: 3,
-      restaurantName: "맘스터치",
       mainMenuName: "치즈버거 세트",
       sideMenuName: "감자튀김",
       drinkOption: "제로콜라",
       extraOption: "치즈 추가",
-      note: null,
-      createdAt: new Date(),
     };
 
-    // 메뉴 표시 형식 생성
-    const isHamburger = hamburgerOrder.restaurantName.includes('맘스터치') || 
-                       hamburgerOrder.restaurantName.includes('롯데리아') || 
-                       hamburgerOrder.restaurantName.includes('프랭크');
-    let menuParts = [hamburgerOrder.mainMenuName];
-    
-    if (isHamburger && hamburgerOrder.sideMenuName) {
-      menuParts.push(hamburgerOrder.sideMenuName);
-    }
-    
-    if (hamburgerOrder.drinkOption) {
-      menuParts.push(hamburgerOrder.drinkOption);
-    }
-    
-    if (hamburgerOrder.extraOption) {
-      menuParts.push(hamburgerOrder.extraOption);
-    }
-    
-    const displayText = menuParts.filter(Boolean).join(" + ");
-
-    expect(displayText).toBe("치즈버거 세트 + 감자튀김 + 제로콜라 + 치즈 추가");
+    expect(formatOrderMenuDisplay(hamburgerOrder)).toBe(
+      "치즈버거 세트 + 감자튀김 + 치즈 추가 + 제로콜라"
+    );
   });
 
   it("should handle orders without side menu or options", async () => {
@@ -233,25 +199,7 @@ describe("Order Summary Page", () => {
       createdAt: new Date(),
     };
 
-    // 메뉴 표시 형식 생성
-    const isHamburger = order.restaurantName.includes('맘스터치') || 
-                       order.restaurantName.includes('롯데리아') || 
-                       order.restaurantName.includes('프랭크');
-    let menuParts = [order.mainMenuName];
-    
-    if (isHamburger && order.sideMenuName) {
-      menuParts.push(order.sideMenuName);
-    }
-    
-    if (order.drinkOption) {
-      menuParts.push(order.drinkOption);
-    }
-    
-    if (order.extraOption) {
-      menuParts.push(order.extraOption);
-    }
-    
-    const displayText = menuParts.filter(Boolean).join(" + ");
+    const displayText = formatOrderMenuDisplay(order);
 
     expect(displayText).toBe("시저 샐러드 + 물");
   });
@@ -288,25 +236,7 @@ describe("Order Summary Page", () => {
     const orders = await caller.order.todayAll();
     const order = orders[0];
 
-    // 메뉴 표시 형식 생성 (직원 이름 제거)
-    const isHamburger = order!.restaurantName.includes('맘스터치') || 
-                       order!.restaurantName.includes('롯데리아') || 
-                       order!.restaurantName.includes('프랭크');
-    let menuParts = [order!.mainMenuName];
-    
-    if (isHamburger && order!.sideMenuName) {
-      menuParts.push(order!.sideMenuName);
-    }
-    
-    if (order!.drinkOption) {
-      menuParts.push(order!.drinkOption);
-    }
-    
-    if (order!.extraOption) {
-      menuParts.push(order!.extraOption);
-    }
-    
-    const displayText = menuParts.filter(Boolean).join(" + ");
+    const displayText = formatOrderMenuDisplay(order!);
 
     // 검증: 직원 이름이 포함되지 않음
     expect(displayText).not.toContain(order!.employeeNickname);

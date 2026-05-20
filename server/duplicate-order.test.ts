@@ -1,3 +1,4 @@
+import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 describe("중복 신청 감지 및 수정", () => {
@@ -38,18 +39,8 @@ describe("중복 신청 감지 및 수정", () => {
   });
 
   it("기존 메뉴와 새 메뉴를 정확하게 조합해야 함", () => {
-    // upsertOrder 함수가 반환하는 형식 검증
-    const oldMenuParts = [mockExistingOrder.mainMenuName || "메뉴 미선택"];
-    if (mockExistingOrder.sideMenuName) oldMenuParts.push(mockExistingOrder.sideMenuName);
-    if (mockExistingOrder.drinkOption) oldMenuParts.push(mockExistingOrder.drinkOption);
-    if (mockExistingOrder.extraOption) oldMenuParts.push(mockExistingOrder.extraOption);
-    const oldMenu = oldMenuParts.join(" + ");
-
-    const newMenuParts = [mockNewOrder.mainMenuName || "메뉴 미선택"];
-    if (mockNewOrder.sideMenuName) newMenuParts.push(mockNewOrder.sideMenuName);
-    if (mockNewOrder.drinkOption) newMenuParts.push(mockNewOrder.drinkOption);
-    if (mockNewOrder.extraOption) newMenuParts.push(mockNewOrder.extraOption);
-    const newMenu = newMenuParts.join(" + ");
+    const oldMenu = formatOrderMenuDisplay(mockExistingOrder, { mainFallback: "메뉴 미선택" });
+    const newMenu = formatOrderMenuDisplay(mockNewOrder, { mainFallback: "메뉴 미선택" });
 
     expect(oldMenu).toBe("야채만포케 + 제로콜라");
     expect(newMenu).toBe("육회포케 + 제로콜라");
@@ -67,25 +58,30 @@ describe("중복 신청 감지 및 수정", () => {
   });
 
   it("여러 항목의 수정 사항을 표시해야 함", () => {
-    // 사이드 메뉴, 음료, 추가옵션이 모두 변경되는 경우
-    const oldMenuParts = ["시저 샐러드", "크루통", "제로콜라", "소스"];
-    const oldMenu = oldMenuParts.join(" + ");
+    const oldMenu = formatOrderMenuDisplay({
+      mainMenuName: "시저 샐러드",
+      sideMenuName: "크루통",
+      extraOption: "소스",
+      drinkOption: "제로콜라",
+    });
+    const newMenu = formatOrderMenuDisplay({
+      mainMenuName: "그릭 샐러드",
+      sideMenuName: "올리브",
+      extraOption: "드레싱",
+      drinkOption: "사이다",
+    });
 
-    const newMenuParts = ["그릭 샐러드", "올리브", "사이다", "드레싱"];
-    const newMenu = newMenuParts.join(" + ");
-
-    expect(oldMenu).toBe("시저 샐러드 + 크루통 + 제로콜라 + 소스");
-    expect(newMenu).toBe("그릭 샐러드 + 올리브 + 사이다 + 드레싱");
+    expect(oldMenu).toBe("시저 샐러드 + 크루통 + 소스 + 제로콜라");
+    expect(newMenu).toBe("그릭 샐러드 + 올리브 + 드레싱 + 사이다");
   });
 
   it("null 값이 있는 경우 정확하게 처리해야 함", () => {
-    // 사이드 메뉴가 없는 경우
-    const menuParts = ["메인메뉴"];
-    if (null) menuParts.push("사이드");
-    if ("제로콜라") menuParts.push("제로콜라");
-    if (null) menuParts.push("추가옵션");
-
-    const menu = menuParts.join(" + ");
+    const menu = formatOrderMenuDisplay({
+      mainMenuName: "메인메뉴",
+      sideMenuName: null,
+      extraOption: null,
+      drinkOption: "제로콜라",
+    });
     expect(menu).toBe("메인메뉴 + 제로콜라");
   });
 

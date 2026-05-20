@@ -1,3 +1,4 @@
+import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
@@ -288,18 +289,8 @@ export async function upsertOrder(data: {
   const existing = await getOrderByEmployee(data.today, data.employeeId);
   if (existing) {
     // 기존 메뉴 저장
-    const oldMenuParts = [existing.mainMenuName || "메뉴 미선택"];
-    if (existing.sideMenuName) oldMenuParts.push(existing.sideMenuName);
-    if (existing.drinkOption) oldMenuParts.push(existing.drinkOption);
-    if (existing.extraOption) oldMenuParts.push(existing.extraOption);
-    const oldMenu = oldMenuParts.join(" + ");
-
-    // 새 메뉴 생성
-    const newMenuParts = [data.mainMenuName || "메뉴 미선택"];
-    if (data.sideMenuName) newMenuParts.push(data.sideMenuName);
-    if (data.drinkOption) newMenuParts.push(data.drinkOption);
-    if (data.extraOption) newMenuParts.push(data.extraOption);
-    const newMenu = newMenuParts.join(" + ");
+    const oldMenu = formatOrderMenuDisplay(existing, { mainFallback: "메뉴 미선택" });
+    const newMenu = formatOrderMenuDisplay(data, { mainFallback: "메뉴 미선택" });
 
     await db.update(orders).set({
       restaurantId: data.restaurantId,
@@ -351,26 +342,7 @@ export async function getOrderSummary(today: string) {
     if (!summaryMap.has(restName)) summaryMap.set(restName, new Map());
     const menuMap = summaryMap.get(restName)!;
 
-    // 한 명의 주문을 하나의 키로 생성 (메인메뉴 + 사이드 + 음료 + 추가옵션 조합)
-    const menuParts = [order.mainMenuName || "메뉴 미선택"];
-    
-    // 햄버거의 경우 사이드 추가
-    const isHamburger = restName.includes('맘스터치') || restName.includes('롯데리아') || restName.includes('프랭크');
-    if (isHamburger && order.sideMenuName) {
-      menuParts.push(order.sideMenuName);
-    }
-    
-    // 음료 추가
-    if (order.drinkOption) {
-      menuParts.push(order.drinkOption);
-    }
-    
-    // 추가옵션 추가
-    if (order.extraOption) {
-      menuParts.push(order.extraOption);
-    }
-    
-    const combinedKey = menuParts.join(" + ");
+    const combinedKey = formatOrderMenuDisplay(order, { mainFallback: "메뉴 미선택" });
     menuMap.set(combinedKey, (menuMap.get(combinedKey) || 0) + 1);
   }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatOrderMenuDisplay } from "@shared/formatOrderMenu";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Copy, RefreshCw, Users, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
@@ -36,12 +37,7 @@ export default function SummaryPage() {
     // 식당별로 그룹화
     const groupedByRestaurant = new Map<string, { items: string[], zeroCokCount: number }>();
     for (const order of orders) {
-      const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
-      let menuParts = [order.mainMenuName];
-      if (isHamburger && order.sideMenuName) menuParts.push(order.sideMenuName);
-      if (order.drinkOption) menuParts.push(order.drinkOption);
-      if (order.extraOption) menuParts.push(order.extraOption);
-      const fullMenu = menuParts.filter(Boolean).join(" + ") || "-";
+      const fullMenu = formatOrderMenuDisplay(order);
 
       if (!groupedByRestaurant.has(order.restaurantName)) {
         groupedByRestaurant.set(order.restaurantName, { items: [], zeroCokCount: 0 });
@@ -194,14 +190,7 @@ export default function SummaryPage() {
                 const isExpanded = expandedRestaurants.has(restaurant);
                 const totalCount = restaurantOrders?.length ?? 0;
                 const zeroCokCount = (restaurantOrders ?? []).filter(o => o.drinkOption === "제로콜라").length;
-                const items = (restaurantOrders ?? []).map(order => {
-                  const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
-                  let menuParts = [order.mainMenuName];
-                  if (isHamburger && order.sideMenuName) menuParts.push(order.sideMenuName);
-                  if (order.drinkOption) menuParts.push(order.drinkOption);
-                  if (order.extraOption) menuParts.push(order.extraOption);
-                  return menuParts.filter(Boolean).join(" + ") || "-";
-                });
+                const items = (restaurantOrders ?? []).map(order => formatOrderMenuDisplay(order));
 
                 return (
                   <div key={restaurant} className="rounded-2xl overflow-hidden"
@@ -294,27 +283,7 @@ export default function SummaryPage() {
                         {order.restaurantName}
                       </td>
                       <td className="px-4 py-3" style={{ color: "oklch(0.35 0.02 30)" }}>
-                        {(() => {
-                          const isHamburger = order.restaurantName.includes('맘스터치') || order.restaurantName.includes('롯데리아') || order.restaurantName.includes('프랭크');
-                          let menuParts = [order.mainMenuName];
-                          
-                          // 햄버거의 경우 사이드 추가
-                          if (isHamburger && order.sideMenuName) {
-                            menuParts.push(order.sideMenuName);
-                          }
-                          
-                          // 음료 추가
-                          if (order.drinkOption) {
-                            menuParts.push(order.drinkOption);
-                          }
-                          
-                          // 추가옵션 추가
-                          if (order.extraOption) {
-                            menuParts.push(order.extraOption);
-                          }
-                          
-                          return menuParts.filter(Boolean).join(" + ") || "-";
-                        })()}
+                        {formatOrderMenuDisplay(order)}
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
                         -
