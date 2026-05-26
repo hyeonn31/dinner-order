@@ -44,7 +44,7 @@ function PasswordPrompt({ onSuccess }: { onSuccess: () => void }) {
               <Lock className="w-6 h-6" style={{ color: "oklch(0.85 0.15 250)" }} />
             </div>
           </div>
-          <CardTitle>관리자 페이지</CardTitle>
+          <CardTitle>메뉴선정</CardTitle>
           <CardDescription>비밀번호를 입력하세요</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -165,8 +165,8 @@ function AdminContent() {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: "oklch(0.20 0.03 250)" }}>관리자 페이지</h1>
-          <p className="text-muted-foreground">오늘의 식당을 선택하고 관리하세요</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "oklch(0.20 0.03 250)" }}>메뉴선정</h1>
+          <p className="text-muted-foreground">오늘의 식당을 선택하세요</p>
         </div>
 
         {/* Closed Status Alert */}
